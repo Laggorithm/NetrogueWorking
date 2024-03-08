@@ -23,8 +23,10 @@ namespace Netrogue
             player = CreatePlayerCharacter();
 
             MapLoader loader = new MapLoader();
-            level = loader.LoadTestMap();
-            mapWidth = level.Width;
+            level = loader.ReadMapFromFile("mapfile.json");
+            level.InitMap();
+            //loader.TestFileReading("mapfile.json");
+            mapWidth = level.mapWidth;
             mapHeight = level.Height;
 
             // Check if the map was loaded successfully

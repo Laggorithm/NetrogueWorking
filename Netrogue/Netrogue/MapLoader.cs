@@ -1,5 +1,8 @@
 ﻿using Netrogue;
 using System;
+using System.Reflection.PortableExecutable;
+using System.IO;
+using Newtonsoft.Json;
 
 namespace Netrogue_working_
 {
@@ -20,7 +23,7 @@ namespace Netrogue_working_
 
             // Add walls
             Random random = new Random();
-            int maxWalls = 5;
+            int maxWalls = 7;
             int wallCount = 0;
 
             while (wallCount < maxWalls)
@@ -53,8 +56,9 @@ namespace Netrogue_working_
             // Load a test map with predefined dimensions
             int width = 20;
             int height = 10;
-            Map map = new Map(width, height);
-
+            Map map = new Map(); //(width, height);
+            map.InitEmptyMap(width, height);
+             
             // Fill map with border walls
             for (int x = 0; x < width; x++)
             {
@@ -96,5 +100,56 @@ namespace Netrogue_working_
 
             return map;
         }
+
+        private bool fileFound(string filename)
+        {
+            bool exists = File.Exists(filename);
+            return exists;
+        }
+        public Map ReadMapFromFile(string filename)
+        {
+            if (fileFound(filename) == false)
+            {
+                Console.WriteLine($"File {filename} not found");
+                return LoadTestMap(); // Return the test map as fallback
+            }
+
+            string fileContents;
+
+            using (StreamReader reader = File.OpenText(filename))
+            {
+               //Read all lines into fileContens
+               fileContents = reader.ReadToEnd();
+            }
+            //Deserialize .Json file in to string 
+            Map loadedMap = JsonConvert.DeserializeObject<Map>(fileContents);
+
+            return loadedMap;
+        }
+        public void TestFileReading(string filename)
+        {
+            using(StreamReader reader = File.OpenText(filename))
+{
+                Console.WriteLine("File contents:");
+                Console.WriteLine();
+
+                string line;
+                while (true)
+                {
+                    line = reader.ReadLine();
+                    if (line == null)
+                    {
+                        break; // End of file
+                    }
+                    Console.WriteLine(line);
+                }
+            }
+
+            
+        }
+
     }
+
+
+
 }
