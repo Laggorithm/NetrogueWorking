@@ -47,8 +47,8 @@ namespace Netrogue
 
         public void InitEmptyMap(int width, int height)
         {
-            mapWidth = mapWidth;
-            Height = mapTiles.Length / mapWidth;
+            mapWidth = width;
+            Height = height;
             tiles = new MapTile[mapWidth, Height];
         }
 

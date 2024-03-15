@@ -69,13 +69,16 @@ namespace Netrogue
         {
             PlayerCharacter newPlayer = new PlayerCharacter();
 
-            // Selecting player name
             do
             {
                 Console.WriteLine("Who are you? ");
                 newPlayer.name = Console.ReadLine();
 
-                if (ContainsDigits(newPlayer.name))
+                if (string.IsNullOrWhiteSpace(newPlayer.name))
+                {
+                    Console.WriteLine("Name cannot be empty. Please enter a valid name.");
+                }
+                else if (ContainsDigits(newPlayer.name))
                 {
                     Console.WriteLine("Invalid name. Please enter a name without digits.");
                 }
@@ -83,7 +86,7 @@ namespace Netrogue
                 {
                     Console.WriteLine($"Hello, {newPlayer.name}!");
                 }
-            } while (ContainsDigits(newPlayer.name)); // Loop until a name without digits is entered
+            } while (string.IsNullOrWhiteSpace(newPlayer.name) || ContainsDigits(newPlayer.name));
 
             // Selecting player race
             bool validRace = false;
