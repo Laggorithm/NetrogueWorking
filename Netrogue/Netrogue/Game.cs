@@ -1,15 +1,24 @@
 ﻿using System;
 using System.Numerics;
 using Netrogue_working_;
+using ZeroElectric.Vinculum;
 
 namespace Netrogue
 {
     internal class Game
     {
+        public static readonly int tileSize = 16;
         private PlayerCharacter player;
         private Map level;
         private int mapWidth;
         private int mapHeight;
+
+        private void Init()
+        {
+            const int screen_width = 900;
+            const int screen_height = 460;
+            Raylib.InitWindow(screen_width, screen_height, "Rogue");
+        }
 
         public void Run()
         {
@@ -45,7 +54,7 @@ namespace Netrogue
                 startY = random.Next(1, mapHeight - 1); // Exclude border
             } while (level.GetTile(startX, startY) != MapTile.Floor); // Ensure player spawns on floor tile
             player.position = new Vector2(startX, startY);
-
+            Init();
             // Draw the map
             level.Draw();
 
@@ -56,13 +65,16 @@ namespace Netrogue
             DrawPlayer();
 
             // Start the game loop
-            while (true)
+            while (Raylib.WindowShouldClose() == false)
             {
+                Raylib.BeginDrawing();
                 // Listen for keypress
                 ConsoleKeyInfo key = Console.ReadKey(true);
                 // Move the player based on keypress
                 MovePlayer(key);
+                Raylib.EndDrawing();
             }
+            Raylib.CloseWindow();
         }
 
         private PlayerCharacter CreatePlayerCharacter()
@@ -162,6 +174,8 @@ namespace Netrogue
             Console.SetCursorPosition((int)player.position.X, (int)player.position.Y);
             // Draw player character
             Console.Write("@");
+
+            Raylib.DrawText("@", player.position.X * Game.tileSize, player.position.Y * Game.tileSize, Game.tileSize, Raylib.WHITE);
         }
 
         private void MovePlayer(ConsoleKeyInfo key)

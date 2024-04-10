@@ -1,4 +1,5 @@
 ﻿using System;
+using ZeroElectric.Vinculum;
 
 namespace Netrogue
 {
@@ -70,6 +71,9 @@ namespace Netrogue
                 {
                     Console.SetCursorPosition(x, y);
                     Console.Write(GetTileSymbol(tiles[x, y]));
+                     
+                    Raylib.DrawRectangle(x * Game.tileSize, y * Game.tileSize, Game.tileSize, Game.tileSize, Raylib.GREEN);
+                    Raylib.DrawText((GetTileSymbol(tiles[x, y]).ToString()), x * Game.tileSize, y * Game.tileSize, Game.tileSize, Raylib.WHITE);
                 }
             }
         }
