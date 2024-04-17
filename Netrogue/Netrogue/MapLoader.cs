@@ -23,7 +23,7 @@ namespace Netrogue_working_
 
             // Add walls
             Random random = new Random();
-            int maxWalls = 7;
+            int maxWalls = 35;
             int wallCount = 0;
 
             while (wallCount < maxWalls)
