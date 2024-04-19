@@ -208,16 +208,6 @@ namespace Netrogue
             player.position.X += moveX;
             player.position.Y += moveY;
 
-            // Check for collision with map boundaries
-            //if (player.position.X < 1)
-            //player.position.X = 1;
-            //else if (player.position.X >= mapWidth - 1)
-            //player.position.X = mapWidth - 2;
-
-            //if (player.position.Y < 1)
-            //player.position.Y = 1;
-            //else if (player.position.Y >= mapHeight - 1)
-            //player.position.Y = mapHeight - 2;
 
             // Check for collision with walls
             if (level.GetTile((int)player.position.X, (int)player.position.Y) == MapTile.Wall)
