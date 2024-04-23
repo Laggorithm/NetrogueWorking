@@ -2,6 +2,7 @@
 using System.Numerics;
 using Netrogue_working_;
 using ZeroElectric.Vinculum;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace Netrogue
 {
@@ -18,6 +19,14 @@ namespace Netrogue
             const int screen_width = 900;
             const int screen_height = 460;
             Raylib.InitWindow(screen_width, screen_height, "Rogue");
+
+            void SetImageAndIndex(PlayerCharacter playerCharacter, Texture Humanoid1, int imagesPerRow, int index)
+            {
+                playerCharacter.image = Humanoid1;
+                playerCharacter.imagePixelX = (index % imagesPerRow) * Game.tileSize;
+                playerCharacter.imagePixelY = (int)(index / imagesPerRow) * Game.tileSize;
+            }
+
         }
 
         public void Run()

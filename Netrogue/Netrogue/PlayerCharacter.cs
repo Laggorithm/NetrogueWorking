@@ -4,10 +4,11 @@ using System.Linq;
 using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
+using ZeroElectric.Vinculum;
 
 namespace Netrogue_working_
 {
-
+    
 
     enum Race
     {
@@ -21,6 +22,10 @@ namespace Netrogue_working_
 
     internal class PlayerCharacter
     {
+        public Texture image;
+        public int imagePixelX;
+        public int imagePixelY;
+
         public string name;
         public Race race;
         public Role role;
