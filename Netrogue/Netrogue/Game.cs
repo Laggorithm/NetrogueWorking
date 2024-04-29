@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Numerics;
+using System.Reflection;
 using Netrogue_working_;
 using ZeroElectric.Vinculum;
 using static System.Net.Mime.MediaTypeNames;
@@ -8,25 +9,33 @@ namespace Netrogue
 {
     internal class Game
     {
-        public static readonly int tileSize = 16;
+        public static readonly int tileSize = 15    ;
         private PlayerCharacter player;
         private Map level;
         private int mapWidth;
         private int mapHeight;
+        private int imagesPerRow = 8;
+        private int index;
+
 
         private void Init()
         {
             const int screen_width = 900;
             const int screen_height = 460;
             Raylib.InitWindow(screen_width, screen_height, "Rogue");
+            Texture imageTexture = Raylib.LoadTexture("RoguePics/Humanoid1.png");
 
-            void SetImageAndIndex(PlayerCharacter playerCharacter, Texture Humanoid1, int imagesPerRow, int index)
-            {
-                playerCharacter.image = Humanoid1;
-                playerCharacter.imagePixelX = (index % imagesPerRow) * Game.tileSize;
-                playerCharacter.imagePixelY = (int)(index / imagesPerRow) * Game.tileSize;
-            }
 
+            SetImageAndIndex(player, imageTexture, imagesPerRow, index);
+
+        }
+
+        void SetImageAndIndex(PlayerCharacter player, Texture PlayerTexture, int imagesPerRow, int index)
+        {
+
+            player.image = PlayerTexture;
+            player.imagePixelX = (index % imagesPerRow) * Game.tileSize;
+            player.imagePixelY = (int)(index / imagesPerRow) * Game.tileSize;
         }
 
         public void Run()
@@ -78,13 +87,20 @@ namespace Netrogue
             {
                 Raylib.BeginDrawing();
                 // Listen for keypress
-                ConsoleKeyInfo key = Console.ReadKey(true);
+
                 // Move the player based on keypress
-                MovePlayer(key);
+                //ConsoleKeyInfo key = Console.ReadKey(true);
+                MovePlayer();
+                if (Console.KeyAvailable) 
+                {
+                     
+                }
                 Raylib.EndDrawing();
             }
             Raylib.CloseWindow();
         }
+        
+      
 
         private PlayerCharacter CreatePlayerCharacter()
         {
@@ -179,22 +195,41 @@ namespace Netrogue
 
         private void DrawPlayer()
         {
-            // Set cursor position to player's position
+             
             Console.SetCursorPosition((int)player.position.X, (int)player.position.Y);
-            // Draw player character
+             
             Console.Write("@");
 
-            Raylib.DrawText("@", player.position.X * Game.tileSize, player.position.Y * Game.tileSize, Game.tileSize, Raylib.WHITE);
+           
+
+            //Raylib.DrawText("@", player.position.X * Game.tileSize, player.position.Y * Game.tileSize, Game.tileSize, Raylib.WHITE);
+
+
+            
+             
+            int rowIndex = 1;  
+             
+
+            int ImageX = rowIndex % imagesPerRow;
+            int ImageY = (int)(rowIndex / imagesPerRow);
+            player.imagePixelX = ImageX * tileSize;  
+            player.imagePixelY = ImageY * tileSize;
+            int pixelPositionX = (int)player.position.X * Game.tileSize;
+            int pixelPositionY = (int)player.position.Y * Game.tileSize;
+            Vector2 pixelPosition = new Vector2(pixelPositionX, pixelPositionY);
+            Rectangle imageRect = new Rectangle(player.imagePixelX, player.imagePixelY, Game.tileSize, Game.tileSize);
+            Raylib.DrawTextureRec( player.image, imageRect, pixelPosition, Raylib.WHITE);
+
         }
 
-        private void MovePlayer(ConsoleKeyInfo key)
+        private void MovePlayer()
         {
             // Prepare movement variables
             int moveX = 0;
             int moveY = 0;
 
             // Determine movement direction based on key pressed
-            switch (key.Key)
+            /*switch (key.Key)
             {
                 case ConsoleKey.UpArrow:
                     moveY = -1;
@@ -211,9 +246,25 @@ namespace Netrogue
                 default:
                     // Ignore other keys
                     return;
-            }
+            }*/
 
-            // Move the player
+            if (Raylib.IsKeyPressed(KeyboardKey.KEY_UP))
+            {
+                moveY = -1;
+            }
+            if (Raylib.IsKeyDown(KeyboardKey.KEY_DOWN))
+            {
+                moveY = 1;
+            }
+            if (Raylib.IsKeyDown(KeyboardKey.KEY_LEFT))
+            {
+                moveX = -1;
+            }
+            if (Raylib.IsKeyDown(KeyboardKey.KEY_RIGHT))
+            {
+                moveX = 1;
+            }
+                // Move the player
             player.position.X += moveX;
             player.position.Y += moveY;
 

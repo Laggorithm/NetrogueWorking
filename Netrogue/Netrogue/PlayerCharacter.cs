@@ -30,5 +30,7 @@ namespace Netrogue_working_
         public Race race;
         public Role role;
         public Vector2 position;
+
+
     }
 }
