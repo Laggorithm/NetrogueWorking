@@ -1,6 +1,5 @@
 ﻿using Netrogue;
 using System;
-using System.Reflection.PortableExecutable;
 using System.IO;
 using Newtonsoft.Json;
 
@@ -8,57 +7,16 @@ namespace Netrogue_working_
 {
     class MapLoader
     {
-        public char[,] LoadMap(int width, int height)
-        {
-            char[,] mapTiles = new char[width, height];
-
-            // Fill map with floor tiles
-            for (int x = 0; x < width; x++)
-            {
-                for (int y = 0; y < height; y++)
-                {
-                    mapTiles[x, y] = '-';
-                }
-            }
-
-            // Add walls
-            Random random = new Random();
-            int maxWalls = 35;
-            int wallCount = 0;
-
-            while (wallCount < maxWalls)
-            {
-                int x = random.Next(1, width - 1); // Exclude border
-                int y = random.Next(1, height - 1); // Exclude border
-
-                // Ensure there's only one tile of space around each wall
-                if (mapTiles[x, y] == '-')
-                {
-                    mapTiles[x, y] = '#'; // Place wall
-                    wallCount++;
-                }
-            }
-
-            // Add exit
-            int exitX, exitY;
-            do
-            {
-                exitX = random.Next(1, width - 1); // Exclude border
-                exitY = random.Next(1, height - 1); // Exclude border
-            } while (mapTiles[exitX, exitY] != '-'); // Ensure exit is placed on a floor tile
-            mapTiles[exitX, exitY] = 'E'; // Place exit
-
-            return mapTiles;
-        }
+        private Random random = new Random();
 
         public Map LoadTestMap()
         {
             // Load a test map with predefined dimensions
             int width = 20;
             int height = 10;
-            Map map = new Map(); //(width, height);
+            Map map = new Map();
             map.InitEmptyMap(width, height);
-             
+
             // Fill map with border walls
             for (int x = 0; x < width; x++)
             {
@@ -98,17 +56,81 @@ namespace Netrogue_working_
                 }
             }
 
+            // Add mobs to the map after it's fully drawn
+            AddMobs(map);
+
             return map;
         }
 
-        private bool fileFound(string filename)
+        private char[,] LoadMap(int width, int height)
         {
-            bool exists = File.Exists(filename);
-            return exists;
+            char[,] mapTiles = new char[width, height];
+
+            // Fill map with floor tiles
+            for (int x = 0; x < width; x++)
+            {
+                for (int y = 0; y < height; y++)
+                {
+                    mapTiles[x, y] = '-';
+                }
+            }
+
+            // Add walls
+            int maxWalls = 35;
+            int wallCount = 0;
+
+            while (wallCount < maxWalls)
+            {
+                int x = random.Next(1, width - 1); // Exclude border
+                int y = random.Next(1, height - 1); // Exclude border
+
+                // Ensure there's only one tile of space around each wall
+                if (mapTiles[x, y] == '-')
+                {
+                    mapTiles[x, y] = '#'; // Place wall
+                    wallCount++;
+                }
+            }
+
+            // Add exit
+            int exitX, exitY;
+            do
+            {
+                exitX = random.Next(1, width - 1); // Exclude border
+                exitY = random.Next(1, height - 1); // Exclude border
+            } while (mapTiles[exitX, exitY] != '-'); // Ensure exit is placed on a floor tile
+            mapTiles[exitX, exitY] = 'E'; // Place exit
+
+            return mapTiles;
         }
+
+        private void AddMobs(Map map)
+        {
+            int width = map.mapWidth;
+            int height = map.Height;
+            int mobCount = 0;
+            int maxMobs = random.Next(3, 6); // Randomly select mob count between 3 to 5
+
+            for (int x = 0; x < width; x++)
+            {
+                for (int y = 0; y < height; y++)
+                {
+                    if (map.GetTile(x, y) == MapTile.Floor)
+                    {
+                        // Try to spawn a mob on this floor tile if mob count is within limit
+                        if (mobCount < maxMobs && random.Next(0, 100) < 10) // 10% chance of mob
+                        {
+                            map.SetTile(x, y, MapTile.Mob);
+                            mobCount++;
+                        }
+                    }
+                }
+            }
+        }
+
         public Map ReadMapFromFile(string filename)
         {
-            if (fileFound(filename) == false)
+            if (!File.Exists(filename))
             {
                 Console.WriteLine($"File {filename} not found");
                 return LoadTestMap(); // Return the test map as fallback
@@ -118,18 +140,23 @@ namespace Netrogue_working_
 
             using (StreamReader reader = File.OpenText(filename))
             {
-               //Read all lines into fileContens
-               fileContents = reader.ReadToEnd();
+                // Read all lines into fileContents
+                fileContents = reader.ReadToEnd();
             }
-            //Deserialize .Json file in to string 
+
+            // Deserialize .Json file into string 
             Map loadedMap = JsonConvert.DeserializeObject<Map>(fileContents);
+
+            // Add mobs to the loaded map after it's fully drawn
+            AddMobs(loadedMap);
 
             return loadedMap;
         }
+
         public void TestFileReading(string filename)
         {
-            using(StreamReader reader = File.OpenText(filename))
-{
+            using (StreamReader reader = File.OpenText(filename))
+            {
                 Console.WriteLine("File contents:");
                 Console.WriteLine();
 
@@ -144,12 +171,6 @@ namespace Netrogue_working_
                     Console.WriteLine(line);
                 }
             }
-
-            
         }
-
     }
-
-
-
 }

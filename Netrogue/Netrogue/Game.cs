@@ -17,9 +17,10 @@ namespace Netrogue
         private int imagesPerRow = 8;
         private int index;
 
-
+        int timer = 0;
         private void Init()
         {
+            Udate();
             const int screen_width = 900;
             const int screen_height = 460;
             Raylib.InitWindow(screen_width, screen_height, "Rogue");
@@ -85,7 +86,7 @@ namespace Netrogue
             // Start the game loop
             while (Raylib.WindowShouldClose() == false)
             {
-                Raylib.BeginDrawing();
+                
                 // Listen for keypress
 
                 // Move the player based on keypress
@@ -93,7 +94,7 @@ namespace Netrogue
                 MovePlayer();
                 if (Console.KeyAvailable) 
                 {
-                     
+                    Raylib.BeginDrawing();
                 }
                 Raylib.EndDrawing();
             }
@@ -101,7 +102,14 @@ namespace Netrogue
         }
         
       
-
+        void Udate()
+        {
+            while (timer > 0)
+            {
+                Raylib.DrawText("You hit a Mob!", Raylib.GetScreenWidth() - 16 * 11, Raylib.GetScreenHeight() - 16, 16, Raylib.WHITE);
+                timer -= 3;
+            }
+        }
         private PlayerCharacter CreatePlayerCharacter()
         {
             PlayerCharacter newPlayer = new PlayerCharacter();
@@ -276,6 +284,19 @@ namespace Netrogue
                 player.position.X -= moveX;
                 player.position.Y -= moveY;
             }
+            
+           
+            
+            if (level.GetTile((int)player.position.X, (int)player.position.Y) == MapTile.Mob)
+            {
+                // If player hits a wall, reset the position
+                player.position.X -= moveX;
+                player.position.Y -= moveY;
+                timer += 3;
+  
+            }
+                
+
 
             // Check for exit
             if (level.GetTile((int)player.position.X, (int)player.position.Y) == MapTile.Exit)

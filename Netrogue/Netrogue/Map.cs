@@ -9,9 +9,8 @@ namespace Netrogue
         public int[] mapTiles;
 
         private MapTile[,] tiles;
+        private Random random = new Random(); // Random generator for mob spawning
 
-       
-        
         public int Height { get; private set; }
 
         public void InitMap()
@@ -19,6 +18,10 @@ namespace Netrogue
             mapWidth = mapWidth;
             Height = mapTiles.Length / mapWidth;
             tiles = new MapTile[mapWidth, Height];
+
+            // Initialize mob count and limit
+            int mobCount = 0;
+            int maxMobs = random.Next(3, 6); // Randomly select mob count between 3 to 5
 
             for (int x = 0; x < mapWidth; x++)
             {
@@ -30,6 +33,16 @@ namespace Netrogue
                     {
                         case 1:
                             SetTile(x, y, MapTile.Floor);
+                            // Try to spawn a mob on this floor tile if mob count is within limit and it's a valid spawn position
+                            if (mobCount < maxMobs && tiles[x, y] == MapTile.Floor)
+                            {
+                                // Randomly decide if there's a mob at this tile
+                                if (random.Next(0, 100) < 10) // 10% chance of mob
+                                {
+                                    SetTile(x, y, MapTile.Mob);
+                                    mobCount++;
+                                }
+                            }
                             break;
                         case 2:
                             SetTile(x, y, MapTile.Wall);
@@ -71,7 +84,7 @@ namespace Netrogue
                 {
                     Console.SetCursorPosition(x, y);
                     Console.Write(GetTileSymbol(tiles[x, y]));
-                     
+
                     Raylib.DrawRectangle(x * Game.tileSize, y * Game.tileSize, Game.tileSize, Game.tileSize, Raylib.GREEN);
                     Raylib.DrawText((GetTileSymbol(tiles[x, y]).ToString()), x * Game.tileSize, y * Game.tileSize, Game.tileSize, Raylib.WHITE);
                 }
@@ -88,6 +101,8 @@ namespace Netrogue
                     return '#';
                 case MapTile.Exit:
                     return 'E';
+                case MapTile.Mob:
+                    return 'M';
                 default:
                     return '?';
             }
@@ -98,6 +113,7 @@ namespace Netrogue
     {
         Floor,
         Wall,
-        Exit
+        Exit,
+        Mob
     }
 }
