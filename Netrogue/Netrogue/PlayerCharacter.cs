@@ -30,7 +30,55 @@ namespace Netrogue_working_
         public Race race;
         public Role role;
         public Vector2 position;
+        public int ImageIndex; // Added ImageIndex property
 
+        public PlayerCharacter()
+        {
+            ImageIndex = 0; // Initialize ImageIndex to 0
+        }
+    }
 
+    class PlayerClasses
+    {
+        public double Mana { get; set; }
+        public double Hp { get; set; }
+
+        public PlayerClasses(double mana, double hp)
+        {
+            Mana = mana;
+            Hp = hp;
+        }
+
+        public override string ToString()
+        {
+            return this.GetType().Name;
+        }
+    }
+
+    class Mage : PlayerClasses
+    {
+        public Mage() : base(10, 3.5) { }
+        public override string ToString()
+        {
+            return ("Mage");
+        }
+    }
+
+    class Warrior : PlayerClasses
+    {
+        public Warrior() : base(5, 6) { }
+        public override string ToString()
+        {
+            return ("Warrior");
+        }
+    }
+
+    class Rogue : PlayerClasses
+    {
+        public Rogue() : base(2, 3) { }
+        public override string ToString()
+        {
+            return ("Rogue");
+        }
     }
 }

@@ -1,7 +1,6 @@
-﻿using System;
+﻿using Netrogue_working_;
+using System;
 using System.Numerics;
-using System.Reflection;
-using Netrogue_working_;
 using ZeroElectric.Vinculum;
 using static System.Net.Mime.MediaTypeNames;
 
@@ -9,43 +8,37 @@ namespace Netrogue
 {
     internal class Game
     {
-        public static readonly int tileSize = 15    ;
+        public static readonly int tileSize = 16;
         private PlayerCharacter player;
         private Map level;
         private int mapWidth;
         private int mapHeight;
         private int imagesPerRow = 8;
         private int index;
+        private int timer = 0;
 
-        int timer = 0;
         private void Init()
         {
-            Udate();
+            Update();
             const int screen_width = 900;
             const int screen_height = 460;
             Raylib.InitWindow(screen_width, screen_height, "Rogue");
             Texture imageTexture = Raylib.LoadTexture("RoguePics/Humanoid1.png");
-
-
             SetImageAndIndex(player, imageTexture, imagesPerRow, index);
-
         }
 
         void SetImageAndIndex(PlayerCharacter player, Texture PlayerTexture, int imagesPerRow, int index)
         {
-
             player.image = PlayerTexture;
-            player.imagePixelX = (index % imagesPerRow) * Game.tileSize;
-            player.imagePixelY = (int)(index / imagesPerRow) * Game.tileSize;
+            player.imagePixelX = (index % imagesPerRow) * tileSize;
+            player.imagePixelY = (int)(index / imagesPerRow) * tileSize;
         }
 
         public void Run()
         {
             Console.WriteLine("Welcome to Netrogue!");
-
             Console.WriteLine("Press Enter to start the game...");
             while (Console.ReadKey().Key != ConsoleKey.Enter) { }
-
             Console.Clear();
 
             player = CreatePlayerCharacter();
@@ -53,7 +46,7 @@ namespace Netrogue
             MapLoader loader = new MapLoader();
             level = loader.ReadMapFromFile("mapfile.json");
             level.InitMap();
-            //loader.TestFileReading("mapfile.json");
+
             mapWidth = level.mapWidth;
             mapHeight = level.Height;
 
@@ -74,25 +67,15 @@ namespace Netrogue
             } while (level.GetTile(startX, startY) != MapTile.Floor); // Ensure player spawns on floor tile
             player.position = new Vector2(startX, startY);
             Init();
-            // Draw the map
             level.Draw();
-
-            // Draw player info
             DrawPlayerInfo();
-
-            // Draw the player
             DrawPlayer();
 
             // Start the game loop
-            while (Raylib.WindowShouldClose() == false)
+            while (!Raylib.WindowShouldClose())
             {
-                
-                // Listen for keypress
-
-                // Move the player based on keypress
-                //ConsoleKeyInfo key = Console.ReadKey(true);
                 MovePlayer();
-                if (Console.KeyAvailable) 
+                if (Console.KeyAvailable)
                 {
                     Raylib.BeginDrawing();
                 }
@@ -100,9 +83,8 @@ namespace Netrogue
             }
             Raylib.CloseWindow();
         }
-        
-      
-        void Udate()
+
+        void Update()
         {
             while (timer > 0)
             {
@@ -110,6 +92,7 @@ namespace Netrogue
                 timer -= 3;
             }
         }
+
         private PlayerCharacter CreatePlayerCharacter()
         {
             PlayerCharacter newPlayer = new PlayerCharacter();
@@ -175,16 +158,19 @@ namespace Netrogue
                     case "1":
                         newPlayer.role = Role.Mage;
                         Console.WriteLine($"You have chosen {newPlayer.role} as your role.");
+                        newPlayer.ImageIndex = 3; // Set the image index for Mage
                         validRole = true;
                         break;
                     case "2":
                         newPlayer.role = Role.Warrior;
                         Console.WriteLine($"You have chosen {newPlayer.role} as your role.");
+                        newPlayer.ImageIndex = 1; // Set the image index for Warrior
                         validRole = true;
                         break;
                     case "3":
                         newPlayer.role = Role.Rogue;
                         Console.WriteLine($"You have chosen {newPlayer.role} as your role.");
+                        newPlayer.ImageIndex = 2; // Set the image index for Rogue
                         validRole = true;
                         break;
                     default:
@@ -203,31 +189,20 @@ namespace Netrogue
 
         private void DrawPlayer()
         {
-             
-            Console.SetCursorPosition((int)player.position.X, (int)player.position.Y);
-             
-            Console.Write("@");
-
-           
-
-            //Raylib.DrawText("@", player.position.X * Game.tileSize, player.position.Y * Game.tileSize, Game.tileSize, Raylib.WHITE);
-
-
             
-             
-            int rowIndex = 1;  
-             
+
+            // Determine the image index based on the player's class
+            int rowIndex = (int)player.ImageIndex;
 
             int ImageX = rowIndex % imagesPerRow;
             int ImageY = (int)(rowIndex / imagesPerRow);
-            player.imagePixelX = ImageX * tileSize;  
+            player.imagePixelX = ImageX * tileSize;
             player.imagePixelY = ImageY * tileSize;
             int pixelPositionX = (int)player.position.X * Game.tileSize;
             int pixelPositionY = (int)player.position.Y * Game.tileSize;
             Vector2 pixelPosition = new Vector2(pixelPositionX, pixelPositionY);
             Rectangle imageRect = new Rectangle(player.imagePixelX, player.imagePixelY, Game.tileSize, Game.tileSize);
-            Raylib.DrawTextureRec( player.image, imageRect, pixelPosition, Raylib.WHITE);
-
+            Raylib.DrawTextureRec(player.image, imageRect, pixelPosition, Raylib.WHITE);
         }
 
         private void MovePlayer()
@@ -235,26 +210,6 @@ namespace Netrogue
             // Prepare movement variables
             int moveX = 0;
             int moveY = 0;
-
-            // Determine movement direction based on key pressed
-            /*switch (key.Key)
-            {
-                case ConsoleKey.UpArrow:
-                    moveY = -1;
-                    break;
-                case ConsoleKey.DownArrow:
-                    moveY = 1;
-                    break;
-                case ConsoleKey.LeftArrow:
-                    moveX = -1;
-                    break;
-                case ConsoleKey.RightArrow:
-                    moveX = 1;
-                    break;
-                default:
-                    // Ignore other keys
-                    return;
-            }*/
 
             if (Raylib.IsKeyPressed(KeyboardKey.KEY_UP))
             {
@@ -272,10 +227,10 @@ namespace Netrogue
             {
                 moveX = 1;
             }
-                // Move the player
+
+            // Move the player
             player.position.X += moveX;
             player.position.Y += moveY;
-
 
             // Check for collision with walls
             if (level.GetTile((int)player.position.X, (int)player.position.Y) == MapTile.Wall)
@@ -284,19 +239,14 @@ namespace Netrogue
                 player.position.X -= moveX;
                 player.position.Y -= moveY;
             }
-            
-           
-            
+
             if (level.GetTile((int)player.position.X, (int)player.position.Y) == MapTile.Mob)
             {
-                // If player hits a wall, reset the position
+                // If player hits a mob, reset the position and increase the timer
                 player.position.X -= moveX;
                 player.position.Y -= moveY;
                 timer += 3;
-  
             }
-                
-
 
             // Check for exit
             if (level.GetTile((int)player.position.X, (int)player.position.Y) == MapTile.Exit)

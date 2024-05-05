@@ -5,6 +5,31 @@ namespace Netrogue
 {
     internal class Map
     {
+        
+        class Tiles
+        {
+            int MapImageIndex { get; set; }
+            public Tiles(int mapImageIndex) 
+            {
+                MapImageIndex = mapImageIndex;
+            }
+
+            
+        }
+
+        class Floor : Tiles
+        {
+            public Floor() : base(1) { }
+        }
+        class Wall : Tiles
+        {
+            public Wall() : base(2) { }
+        }
+        class Exit : Tiles
+        {
+            public Exit() : base(3) { }
+        }
+        
         public int mapWidth { get; set; }
         public int[] mapTiles;
 

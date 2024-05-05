@@ -2,6 +2,8 @@
 using System;
 using System.IO;
 using Newtonsoft.Json;
+using System.Numerics;
+using ZeroElectric.Vinculum;
 
 namespace Netrogue_working_
 {
@@ -13,7 +15,7 @@ namespace Netrogue_working_
         {
             // Load a test map with predefined dimensions
             int width = 20;
-            int height = 10;
+            int height = 20;
             Map map = new Map();
             map.InitEmptyMap(width, height);
 
@@ -173,4 +175,22 @@ namespace Netrogue_working_
             }
         }
     }
+
+    /*private void DrawMap()
+    {
+
+
+        // Determine the image index based on the player's class
+        int rowIndex = (int)Game.MapImageIndex;
+
+        int ImageX = rowIndex % imagesPerRow;
+        int ImageY = (int)(rowIndex / imagesPerRow);
+        player.imagePixelX = ImageX * tileSize;
+        player.imagePixelY = ImageY * tileSize;
+        int pixelPositionX = (int)player.position.X * Game.tileSize;
+        int pixelPositionY = (int)player.position.Y * Game.tileSize;
+        Vector2 pixelPosition = new Vector2(pixelPositionX, pixelPositionY);
+        Rectangle imageRect = new Rectangle(player.imagePixelX, player.imagePixelY, Game.tileSize, Game.tileSize);
+        Raylib.DrawTextureRec(player.image, imageRect, pixelPosition, Raylib.WHITE);
+    }*/
 }
