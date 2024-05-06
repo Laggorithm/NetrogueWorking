@@ -1,11 +1,16 @@
 ﻿using System;
+using System.Numerics;
 using ZeroElectric.Vinculum;
 
 namespace Netrogue
 {
+
+
     internal class Map
     {
+        int TileIndex;
         
+        public Texture MapImage { get; set; }
         class Tiles
         {
             int MapImageIndex { get; set; }
@@ -29,7 +34,10 @@ namespace Netrogue
         {
             public Exit() : base(3) { }
         }
-        
+        class Mob : Tiles
+        {
+            public Mob() : base(4) { }
+        }
         public int mapWidth { get; set; }
         public int[] mapTiles;
 
@@ -56,7 +64,7 @@ namespace Netrogue
                     int tileId = mapTiles[index]; // Read the tile value at index
                     switch (tileId)
                     {
-                        case 1:
+                        case (int)MapTile.Floor:
                             SetTile(x, y, MapTile.Floor);
                             // Try to spawn a mob on this floor tile if mob count is within limit and it's a valid spawn position
                             if (mobCount < maxMobs && tiles[x, y] == MapTile.Floor)
@@ -69,10 +77,10 @@ namespace Netrogue
                                 }
                             }
                             break;
-                        case 2:
+                        case (int)MapTile.Wall:
                             SetTile(x, y, MapTile.Wall);
                             break;
-                        case 3:
+                        case (int)MapTile.Exit:
                             SetTile(x, y, MapTile.Exit);
                             break;
                         default:
@@ -108,10 +116,16 @@ namespace Netrogue
                 for (int x = 0; x < mapWidth; x++)
                 {
                     Console.SetCursorPosition(x, y);
-                    Console.Write(GetTileSymbol(tiles[x, y]));
 
-                    Raylib.DrawRectangle(x * Game.tileSize, y * Game.tileSize, Game.tileSize, Game.tileSize, Raylib.GREEN);
-                    Raylib.DrawText((GetTileSymbol(tiles[x, y]).ToString()), x * Game.tileSize, y * Game.tileSize, Game.tileSize, Raylib.WHITE);
+                    int tileIndex = x + y * mapWidth;
+                    int tileId = mapTiles[tileIndex];
+
+                    // Adjust the drawing position based on the tile ID
+                    int TileX = (tileId % Game.imagesPerRow) * Game.tileSize;
+                    int TileY = (tileId / Game.imagesPerRow) * Game.tileSize;
+
+                    // Draw the texture
+                    Raylib.DrawTextureRec(MapImage, new Rectangle(TileX, TileY, Game.tileSize, Game.tileSize), new Vector2(x * Game.tileSize, y * Game.tileSize), Raylib.WHITE);
                 }
             }
         }
@@ -136,9 +150,10 @@ namespace Netrogue
 
     internal enum MapTile
     {
-        Floor,
-        Wall,
-        Exit,
-        Mob
+        Floor = 1,
+        Wall = 52,
+        Exit = 9,
+        Mob = 119
     }
+
 }

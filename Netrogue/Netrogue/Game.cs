@@ -6,6 +6,7 @@ using static System.Net.Mime.MediaTypeNames;
 
 namespace Netrogue
 {
+     
     internal class Game
     {
         public static readonly int tileSize = 16;
@@ -13,17 +14,18 @@ namespace Netrogue
         private Map level;
         private int mapWidth;
         private int mapHeight;
-        private int imagesPerRow = 8;
+        public static int imagesPerRow = 12;
         private int index;
         private int timer = 0;
 
+        Texture imageTexture;
         private void Init()
         {
             Update();
             const int screen_width = 900;
             const int screen_height = 460;
             Raylib.InitWindow(screen_width, screen_height, "Rogue");
-            Texture imageTexture = Raylib.LoadTexture("RoguePics/Humanoid1.png");
+            imageTexture = Raylib.LoadTexture("RoguePics/tilemap_packed.png");
             SetImageAndIndex(player, imageTexture, imagesPerRow, index);
         }
 
@@ -36,6 +38,7 @@ namespace Netrogue
 
         public void Run()
         {
+            
             Console.WriteLine("Welcome to Netrogue!");
             Console.WriteLine("Press Enter to start the game...");
             while (Console.ReadKey().Key != ConsoleKey.Enter) { }
@@ -46,7 +49,8 @@ namespace Netrogue
             MapLoader loader = new MapLoader();
             level = loader.ReadMapFromFile("mapfile.json");
             level.InitMap();
-
+            Init();
+            level.MapImage = (imageTexture);
             mapWidth = level.mapWidth;
             mapHeight = level.Height;
 
@@ -66,19 +70,18 @@ namespace Netrogue
                 startY = random.Next(1, mapHeight - 1); // Exclude border
             } while (level.GetTile(startX, startY) != MapTile.Floor); // Ensure player spawns on floor tile
             player.position = new Vector2(startX, startY);
-            Init();
-            level.Draw();
-            DrawPlayerInfo();
-            DrawPlayer();
+            
+   
 
             // Start the game loop
             while (!Raylib.WindowShouldClose())
             {
                 MovePlayer();
-                if (Console.KeyAvailable)
-                {
-                    Raylib.BeginDrawing();
-                }
+              
+                Raylib.BeginDrawing();
+                    level.Draw();
+                    DrawPlayerInfo();
+                DrawPlayer();
                 Raylib.EndDrawing();
             }
             Raylib.CloseWindow();
@@ -158,19 +161,19 @@ namespace Netrogue
                     case "1":
                         newPlayer.role = Role.Mage;
                         Console.WriteLine($"You have chosen {newPlayer.role} as your role.");
-                        newPlayer.ImageIndex = 3; // Set the image index for Mage
+                        newPlayer.ImageIndex = 85; // Set the image index for Mage
                         validRole = true;
                         break;
                     case "2":
                         newPlayer.role = Role.Warrior;
                         Console.WriteLine($"You have chosen {newPlayer.role} as your role.");
-                        newPlayer.ImageIndex = 1; // Set the image index for Warrior
+                        newPlayer.ImageIndex = 86; // Set the image index for Warrior
                         validRole = true;
                         break;
                     case "3":
                         newPlayer.role = Role.Rogue;
                         Console.WriteLine($"You have chosen {newPlayer.role} as your role.");
-                        newPlayer.ImageIndex = 2; // Set the image index for Rogue
+                        newPlayer.ImageIndex = 87; // Set the image index for Rogue
                         validRole = true;
                         break;
                     default:
@@ -187,23 +190,23 @@ namespace Netrogue
             return newPlayer;
         }
 
-        private void DrawPlayer()
-        {
+            private void DrawPlayer()
+            {
             
 
-            // Determine the image index based on the player's class
-            int rowIndex = (int)player.ImageIndex;
+                // Determine the image index based on the player's class
+                int rowIndex = (int)player.ImageIndex;
 
-            int ImageX = rowIndex % imagesPerRow;
-            int ImageY = (int)(rowIndex / imagesPerRow);
-            player.imagePixelX = ImageX * tileSize;
-            player.imagePixelY = ImageY * tileSize;
-            int pixelPositionX = (int)player.position.X * Game.tileSize;
-            int pixelPositionY = (int)player.position.Y * Game.tileSize;
-            Vector2 pixelPosition = new Vector2(pixelPositionX, pixelPositionY);
-            Rectangle imageRect = new Rectangle(player.imagePixelX, player.imagePixelY, Game.tileSize, Game.tileSize);
-            Raylib.DrawTextureRec(player.image, imageRect, pixelPosition, Raylib.WHITE);
-        }
+                int ImageX = rowIndex % imagesPerRow;
+                int ImageY = (int)(rowIndex / imagesPerRow);
+                player.imagePixelX = ImageX * tileSize;
+                player.imagePixelY = ImageY * tileSize;
+                int pixelPositionX = (int)player.position.X * Game.tileSize;
+                int pixelPositionY = (int)player.position.Y * Game.tileSize;
+                Vector2 pixelPosition = new Vector2(pixelPositionX, pixelPositionY);
+                Rectangle imageRect = new Rectangle(player.imagePixelX, player.imagePixelY, Game.tileSize, Game.tileSize);
+                Raylib.DrawTextureRec(player.image, imageRect, pixelPosition, Raylib.WHITE);
+            }
 
         private void MovePlayer()
         {
