@@ -17,16 +17,59 @@ namespace Netrogue
         public static int imagesPerRow = 12;
         private int index;
         private int timer = 0;
-
+        int game_width;
+        int game_height;
+        RenderTexture game_screen;
         Texture imageTexture;
         private void Init()
         {
+
             Update();
+            
+            game_width = 480;
+            game_height = 270;
             const int screen_width = 900;
             const int screen_height = 460;
             Raylib.InitWindow(screen_width, screen_height, "Rogue");
+            Raylib.SetWindowMinSize(game_width, game_height);
+            Raylib.SetWindowState(ConfigFlags.FLAG_WINDOW_RESIZABLE);
+            game_screen = Raylib.LoadRenderTexture(game_width, game_height);
+            Raylib.SetTextureFilter(game_screen.texture, TextureFilter.TEXTURE_FILTER_POINT);
+            
+            
             imageTexture = Raylib.LoadTexture("RoguePics/tilemap_packed.png");
             SetImageAndIndex(player, imageTexture, imagesPerRow, index);
+
+
+        }
+        private void DrawGameScaled()
+        {
+
+            // Tässä piirretään tekstuuri ruudulle
+            Raylib.BeginDrawing();
+            Raylib.ClearBackground(Raylib.DARKGRAY);
+
+            int draw_width = Raylib.GetScreenWidth();
+            int draw_height = Raylib.GetScreenHeight();
+            float scale = Math.Min((float)draw_width / game_width, (float)draw_height / game_height);
+
+            // Note: when drawing on texture, the Y-axis is
+            //flipped, need to multiply height by -1
+            Rectangle source = new Rectangle(0.0f, 0.0f,
+                game_screen.texture.width,
+                game_screen.texture.height * -1.0f);
+
+            Rectangle destination = new Rectangle(
+                (draw_width - (float)game_width * scale) * 0.5f,
+                (draw_height - (float)game_height * scale) * 0.5f,
+                game_width * scale,
+                game_height * scale);
+
+            Raylib.DrawTexturePro(game_screen.texture,
+                source, destination,
+                new Vector2(0, 0), 0.0f, Raylib.WHITE);
+
+            Raylib.EndDrawing();
         }
 
         void SetImageAndIndex(PlayerCharacter player, Texture PlayerTexture, int imagesPerRow, int index)
@@ -38,7 +81,7 @@ namespace Netrogue
 
         public void Run()
         {
-            
+            Raylib.UnloadRenderTexture(game_screen);
             Console.WriteLine("Welcome to Netrogue!");
             Console.WriteLine("Press Enter to start the game...");
             while (Console.ReadKey().Key != ConsoleKey.Enter) { }
@@ -77,15 +120,18 @@ namespace Netrogue
             while (!Raylib.WindowShouldClose())
             {
                 MovePlayer();
-              
-                Raylib.BeginDrawing();
-                    level.Draw();
+
+                Raylib.BeginTextureMode(game_screen);
+                level.Draw();
                     DrawPlayerInfo();
                 DrawPlayer();
-                Raylib.EndDrawing();
+                Raylib.EndTextureMode();
+                DrawGameScaled();
+                
             }
             Raylib.CloseWindow();
         }
+
 
         void Update()
         {
@@ -256,7 +302,7 @@ namespace Netrogue
             {
                 // Re-generate the map and reset player position
                 MapLoader loader = new MapLoader();
-                
+               
                 player.position = FindValidPlayerSpawnPosition();
                 // Clear the screen and redraw everything
                 Console.Clear();

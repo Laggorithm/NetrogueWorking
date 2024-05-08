@@ -1,159 +1,82 @@
-﻿using System;
+﻿using Netrogue_working_;
+using System;
+using System.Collections.Generic;
 using System.Numerics;
 using ZeroElectric.Vinculum;
 
 namespace Netrogue
 {
-
-
     internal class Map
     {
-        int TileIndex;
-        
-        public Texture MapImage { get; set; }
-        class Tiles
+        public List<Enemy> enemies;
+        public List<Item> items;
+
+        public Map()
         {
-            int MapImageIndex { get; set; }
-            public Tiles(int mapImageIndex) 
+            enemies = new List<Enemy>();
+            items = new List<Item>();
+        }
+
+        public void LoadEnemiesAndItems(MapLayer enemyLayer, MapLayer itemLayer, Texture spriteAtlas)
+        {
+            LoadEnemies(enemyLayer, spriteAtlas);
+            LoadItems(itemLayer, spriteAtlas);
+        }
+
+        private void LoadEnemies(MapLayer layer, Texture spriteAtlas)
+        {
+            for (int y = 0; y < layer.mapTiles.Length / layer.width; y++)
             {
-                MapImageIndex = mapImageIndex;
-            }
-
-            
-        }
-
-        class Floor : Tiles
-        {
-            public Floor() : base(1) { }
-        }
-        class Wall : Tiles
-        {
-            public Wall() : base(2) { }
-        }
-        class Exit : Tiles
-        {
-            public Exit() : base(3) { }
-        }
-        class Mob : Tiles
-        {
-            public Mob() : base(4) { }
-        }
-        public int mapWidth { get; set; }
-        public int[] mapTiles;
-
-        private MapTile[,] tiles;
-        private Random random = new Random(); // Random generator for mob spawning
-
-        public int Height { get; private set; }
-
-        public void InitMap()
-        {
-            mapWidth = mapWidth;
-            Height = mapTiles.Length / mapWidth;
-            tiles = new MapTile[mapWidth, Height];
-
-            // Initialize mob count and limit
-            int mobCount = 0;
-            int maxMobs = random.Next(3, 6); // Randomly select mob count between 3 to 5
-
-            for (int x = 0; x < mapWidth; x++)
-            {
-                for (int y = 0; y < Height; y++)
+                for (int x = 0; x < layer.width; x++)
                 {
-                    int index = x + y * mapWidth; // Calculate index of tile at (x, y)
-                    int tileId = mapTiles[index]; // Read the tile value at index
+                    Vector2 position = new Vector2(x, y);
+                    int index = x + y * layer.width;
+                    int tileId = layer.mapTiles[index];
                     switch (tileId)
                     {
-                        case (int)MapTile.Floor:
-                            SetTile(x, y, MapTile.Floor);
-                            // Try to spawn a mob on this floor tile if mob count is within limit and it's a valid spawn position
-                            if (mobCount < maxMobs && tiles[x, y] == MapTile.Floor)
-                            {
-                                // Randomly decide if there's a mob at this tile
-                                if (random.Next(0, 100) < 10) // 10% chance of mob
-                                {
-                                    SetTile(x, y, MapTile.Mob);
-                                    mobCount++;
-                                }
-                            }
+                        case 1:
+                            enemies.Add(new Enemy("Orc", position, spriteAtlas, tileId));
                             break;
-                        case (int)MapTile.Wall:
-                            SetTile(x, y, MapTile.Wall);
-                            break;
-                        case (int)MapTile.Exit:
-                            SetTile(x, y, MapTile.Exit);
-                            break;
-                        default:
-                            // Invalid tile, treat as floor
-                            SetTile(x, y, MapTile.Floor);
-                            break;
+                            // Add more cases for different enemy types if needed
                     }
                 }
             }
         }
 
-        public void InitEmptyMap(int width, int height)
+        private void LoadItems(MapLayer layer, Texture spriteAtlas)
         {
-            mapWidth = width;
-            Height = height;
-            tiles = new MapTile[mapWidth, Height];
-        }
-
-        public void SetTile(int x, int y, MapTile tile)
-        {
-            tiles[x, y] = tile;
-        }
-
-        public MapTile GetTile(int x, int y)
-        {
-            return tiles[x, y];
+            // Implement loading items from the item layer if needed
         }
 
         public void Draw()
         {
-            for (int y = 0; y < Height; y++)
+            foreach (var item in items)
             {
-                for (int x = 0; x < mapWidth; x++)
+                item.Draw();
+            }
+
+            foreach (var enemy in enemies)
+            {
+                enemy.Draw();
+            }
+        }
+
+        public Enemy GetEnemyAt(int x, int y)
+        {
+            foreach (var enemy in enemies)
+            {
+                if (enemy.position.X == x && enemy.position.Y == y)
                 {
-                    Console.SetCursorPosition(x, y);
-
-                    int tileIndex = x + y * mapWidth;
-                    int tileId = mapTiles[tileIndex];
-
-                    // Adjust the drawing position based on the tile ID
-                    int TileX = (tileId % Game.imagesPerRow) * Game.tileSize;
-                    int TileY = (tileId / Game.imagesPerRow) * Game.tileSize;
-
-                    // Draw the texture
-                    Raylib.DrawTextureRec(MapImage, new Rectangle(TileX, TileY, Game.tileSize, Game.tileSize), new Vector2(x * Game.tileSize, y * Game.tileSize), Raylib.WHITE);
+                    return enemy;
                 }
             }
+            return null;
         }
 
-        private char GetTileSymbol(MapTile tile)
+        public Item GetItemAt(int x, int y)
         {
-            switch (tile)
-            {
-                case MapTile.Floor:
-                    return '-';
-                case MapTile.Wall:
-                    return '#';
-                case MapTile.Exit:
-                    return 'E';
-                case MapTile.Mob:
-                    return 'M';
-                default:
-                    return '?';
-            }
+            // Implement getting item at position (x, y) if needed
+            return null;
         }
     }
-
-    internal enum MapTile
-    {
-        Floor = 0,
-        Wall = 40,
-        Exit = 35,
-        Mob = 119
-    }
-
 }
