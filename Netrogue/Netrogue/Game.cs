@@ -256,7 +256,7 @@ namespace Netrogue
             {
                 // Re-generate the map and reset player position
                 MapLoader loader = new MapLoader();
-                level = loader.LoadTestMap();
+                
                 player.position = FindValidPlayerSpawnPosition();
                 // Clear the screen and redraw everything
                 Console.Clear();

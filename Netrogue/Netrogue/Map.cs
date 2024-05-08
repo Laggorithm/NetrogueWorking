@@ -151,7 +151,7 @@ namespace Netrogue
     internal enum MapTile
     {
         Floor = 1,
-        Wall = 52,
+        Wall = 40,
         Exit = 9,
         Mob = 119
     }
