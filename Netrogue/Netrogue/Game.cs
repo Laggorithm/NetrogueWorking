@@ -290,6 +290,7 @@ namespace Netrogue
             // Write player info
             Console.WriteLine($"Race: {player.race}, Name: {player.name}, Role: {player.role}");
         }
+
         private bool ContainsDigits(string input)
         {
             foreach (char c in input)
