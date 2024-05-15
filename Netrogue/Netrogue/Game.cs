@@ -26,8 +26,8 @@ namespace Netrogue
 
             Update();
             
-            game_width = 480;
-            game_height = 270;
+            game_width = 16 * 16;
+            game_height = 16 * 16;
             const int screen_width = 900;
             const int screen_height = 460;
             Raylib.InitWindow(screen_width, screen_height, "Rogue");
@@ -120,14 +120,17 @@ namespace Netrogue
             while (!Raylib.WindowShouldClose())
             {
                 MovePlayer();
+                level.MapImage = imageTexture;
 
+                level.LoadEnemiesAndItems(imageTexture);
                 Raylib.BeginTextureMode(game_screen);
                 level.Draw();
-                    DrawPlayerInfo();
+                DrawPlayerInfo();
                 DrawPlayer();
                 Raylib.EndTextureMode();
                 DrawGameScaled();
                 
+
             }
             Raylib.CloseWindow();
         }
