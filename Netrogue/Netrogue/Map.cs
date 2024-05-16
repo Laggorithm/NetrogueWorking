@@ -12,9 +12,10 @@ namespace Netrogue
         public int mapWidth { get; set; }
         public int Height { get; private set; }
         private MapTile[,] tiles;
-        public List<Enemy> enemies { get; private set; }
-        public List<Item> items { get; private set; }
+        public List<Enemy> enemies { get; set; }
+        public List<Item> items { get; set; }
 
+        
         public Map()
         {
             layers = new MapLayer[3]; // Assuming 3 layers: ground, items, enemies
@@ -83,7 +84,52 @@ namespace Netrogue
             }
             return null; // Wanted layer was not found!
         }
+        public void LoadEnemiesAndItems()
+        {
+            enemies = new List<Enemy>();
+            MapLayer enemyLayer = GetLayer("enemies");
 
+            int[] enemyTiles = enemyLayer.mapTiles;
+            int mapHeight = enemyTiles.Length / mapWidth;
+            for (int y = 0; y < mapHeight; y++)
+            {
+                for (int x = 0; x < mapWidth; x++)
+                {
+                    Vector2 position = new Vector2(x, y);
+
+                    int index = x + y * mapWidth;
+                    int tileId = enemyTiles[index];
+                    switch (tileId)
+                    {
+                        case 0: break;
+
+                        case 111:
+                            enemies.Add(new Enemy("Ghost", 111, position, tileId, this));
+                            break;
+                    }
+                }
+            }
+
+            items = new List<Item>();
+            MapLayer itemLayer = GetLayer("items");
+
+            int[] itemTiles = itemLayer.mapTiles;
+            int itemMapHeight = itemTiles.Length / mapWidth;
+            for (int y = 0; y < itemMapHeight; y++)
+            {
+                for (int x = 0; x < mapWidth; x++)
+                {
+                    Vector2 position = new Vector2(x, y);
+
+                    int index = x + y * mapWidth;
+                    int tileId = itemTiles[index];
+                    if (tileId != 0)
+                    {
+                        items.Add(new Item(tileId, position, MapImage, tileId));
+                    }
+                }
+            }
+        }
         public void Draw()
         {
             MapLayer groundLayer = GetLayer("ground");
@@ -119,48 +165,7 @@ namespace Netrogue
             }
         }
 
-        public void LoadEnemiesAndItems(Texture spriteAtlas)
-        {
-            enemies = new List<Enemy>();
-            MapLayer enemyLayer = GetLayer("enemies");
-
-            int[] enemyTiles = enemyLayer.mapTiles;
-            int mapHeight = enemyTiles.Length / mapWidth;
-            for (int y = 0; y < mapHeight; y++)
-            {
-                for (int x = 0; x < mapWidth; x++)
-                {
-                    Vector2 position = new Vector2(x, y);
-
-                    int index = x + y * mapWidth;
-                    int tileId = enemyTiles[index];
-                    if (tileId != 0)
-                    {
-                        enemies.Add(new Enemy(tileId, position, spriteAtlas, tileId));
-                    }
-                }
-            }
-
-            items = new List<Item>();
-            MapLayer itemLayer = GetLayer("items");
-
-            int[] itemTiles = itemLayer.mapTiles;
-            int itemMapHeight = itemTiles.Length / mapWidth;
-            for (int y = 0; y < itemMapHeight; y++)
-            {
-                for (int x = 0; x < mapWidth; x++)
-                {
-                    Vector2 position = new Vector2(x, y);
-
-                    int index = x + y * mapWidth;
-                    int tileId = itemTiles[index];
-                    if (tileId != 0)
-                    {
-                        items.Add(new Item(tileId, position, spriteAtlas, tileId));
-                    }
-                }
-            }
-        }
+        
 
         private char GetTileSymbol(MapTile tile)
         {

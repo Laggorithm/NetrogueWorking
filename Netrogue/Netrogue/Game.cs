@@ -113,8 +113,8 @@ namespace Netrogue
                 startY = random.Next(1, mapHeight - 1); // Exclude border
             } while (level.GetTile(startX, startY) != MapTile.Floor); // Ensure player spawns on floor tile
             player.position = new Vector2(startX, startY);
-            
-   
+
+            level.LoadEnemiesAndItems();
 
             // Start the game loop
             while (!Raylib.WindowShouldClose())
@@ -122,9 +122,10 @@ namespace Netrogue
                 MovePlayer();
                 level.MapImage = imageTexture;
 
-                level.LoadEnemiesAndItems(imageTexture);
+                
                 Raylib.BeginTextureMode(game_screen);
                 level.Draw();
+
                 DrawPlayerInfo();
                 DrawPlayer();
                 Raylib.EndTextureMode();
