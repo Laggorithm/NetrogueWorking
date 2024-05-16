@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Numerics;
 using ZeroElectric.Vinculum;
+using TurboMapReader;
 
 namespace Netrogue
 {
@@ -15,7 +17,6 @@ namespace Netrogue
         public List<Enemy> enemies { get; set; }
         public List<Item> items { get; set; }
 
-        
         public Map()
         {
             layers = new MapLayer[3]; // Assuming 3 layers: ground, items, enemies
@@ -84,10 +85,11 @@ namespace Netrogue
             }
             return null; // Wanted layer was not found!
         }
+
         public void LoadEnemiesAndItems()
         {
             enemies = new List<Enemy>();
-            MapLayer enemyLayer = GetLayer("enemies");
+            MapLayer enemyLayer = GetLayer("Monsters");
 
             int[] enemyTiles = enemyLayer.mapTiles;
             int mapHeight = enemyTiles.Length / mapWidth;
@@ -99,15 +101,12 @@ namespace Netrogue
 
                     int index = x + y * mapWidth;
                     int tileId = enemyTiles[index];
-                    if (tileId != 0)
-                    {
                         switch (tileId)
                         {
                             case 0: break;
                             case 111: enemies.Add(new Enemy("Mage", 111, position, tileId, this)); break;
-
+                            default: enemies.Add(new Enemy("UnknownEnemy", 111, position, tileId, this)); break;
                         }
-                    }
                 }
             }
 
@@ -132,9 +131,10 @@ namespace Netrogue
                 }
             }
         }
+
         public void Draw()
         {
-            MapLayer groundLayer = GetLayer("ground");
+            MapLayer groundLayer = GetLayer("Ground");
 
             if (groundLayer != null)
             {
@@ -167,8 +167,6 @@ namespace Netrogue
             }
         }
 
-        
-
         private char GetTileSymbol(MapTile tile)
         {
             switch (tile)
@@ -184,6 +182,28 @@ namespace Netrogue
                 default:
                     return '?';
             }
+        }
+
+        public void LoadFromTileMap(TiledMap tileMap)
+        {
+            mapWidth = tileMap.width;
+            Height = tileMap.height;
+            tiles = new MapTile[mapWidth, Height];
+            layers = new MapLayer[tileMap.layers.Count];
+
+            for (int i = 0; i < tileMap.layers.Count; i++)
+            {
+                var layer = tileMap.layers[i];
+                MapLayer mapLayer = new MapLayer
+                {
+                    name = layer.name,
+                    mapTiles = layer.data.Select(t => t - 1).ToArray() // Adjust tile indices
+                };
+                layers[i] = mapLayer;
+            }
+
+            InitMap();
+            LoadEnemiesAndItems();
         }
     }
 

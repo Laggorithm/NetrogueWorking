@@ -2,6 +2,7 @@
 using System.IO;
 using Newtonsoft.Json;
 using Netrogue;
+using TurboMapReader;
 
 namespace Netrogue_working_
 {
@@ -15,18 +16,25 @@ namespace Netrogue_working_
                 return null;
             }
 
-            string fileContents;
-
-            using (StreamReader reader = File.OpenText(filename))
+            // Load the map using TurboMapReader
+            TiledMap loadedTileMap = TurboMapReader.MapReader.LoadMapFromFile(filename);
+            if (loadedTileMap == null)
             {
-                // Read all lines into fileContents
-                fileContents = reader.ReadToEnd();
+                Console.WriteLine($"Failed to load map from file {filename}");
+                return null;
             }
 
-            // Deserialize JSON file into Map object
-            Map loadedMap = JsonConvert.DeserializeObject<Map>(fileContents);
+            // Create a new Map object from the loaded TiledMap data
+            Map loadedMap = CreateMapObject(loadedTileMap);
 
             return loadedMap;
+        }
+
+        private Map CreateMapObject(TiledMap loadedTileMap)
+        {
+            Map map = new Map();
+            map.LoadFromTileMap(loadedTileMap);
+            return map;
         }
     }
 }

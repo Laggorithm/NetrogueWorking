@@ -90,7 +90,7 @@ namespace Netrogue
             player = CreatePlayerCharacter();
 
             MapLoader loader = new MapLoader();
-            level = loader.ReadMapFromFile("mapfile.json");
+            level = loader.ReadMapFromFile("RogueMap.tmj");
             level.InitMap();
             Init();
             level.MapImage = (imageTexture);
