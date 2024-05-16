@@ -99,13 +99,14 @@ namespace Netrogue
 
                     int index = x + y * mapWidth;
                     int tileId = enemyTiles[index];
-                    switch (tileId)
+                    if (tileId != 0)
                     {
-                        case 0: break;
+                        switch (tileId)
+                        {
+                            case 0: break;
+                            case 111: enemies.Add(new Enemy("Mage", 111, position, tileId, this)); break;
 
-                        case 111:
-                            enemies.Add(new Enemy("Ghost", 111, position, tileId, this));
-                            break;
+                        }
                     }
                 }
             }
@@ -123,9 +124,10 @@ namespace Netrogue
 
                     int index = x + y * mapWidth;
                     int tileId = itemTiles[index];
-                    if (tileId != 0)
+                    switch (tileId)
                     {
-                        items.Add(new Item(tileId, position, MapImage, tileId));
+                        case 0: break;
+                        case 124: items.Add(new Item("helmet", 124, position, tileId, this)); break;
                     }
                 }
             }
