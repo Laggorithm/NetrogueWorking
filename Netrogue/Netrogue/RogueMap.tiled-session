@@ -3,7 +3,7 @@
         "height": 4300,
         "width": 2
     },
-    "activeFile": "",
+    "activeFile": "RoguePics/безымянный.tmx",
     "expandedProjectPaths": [
     ],
     "file.lastUsedOpenFilter": "Все файлы (*)",
@@ -11,19 +11,30 @@
         "RoguePics/egrwgeWF.tsx": {
             "scaleInDock": 1,
             "scaleInEditor": 1
+        },
+        "RoguePics/безымянный.tmx": {
+            "scale": 5.070625,
+            "selectedLayer": 1,
+            "viewCenter": {
+                "x": 110.24282016516703,
+                "y": 79.97041784789843
+            }
         }
     },
     "last.exportedFilePath": "C:/Users/s2200784/projects/C# projects/Netrogue(working)/Netrogue/Netrogue/Netrogue",
     "last.imagePath": "C:/Users/s2200784/projects/C# projects/Netrogue(working)/Netrogue/Netrogue/Netrogue",
     "map.height": 10,
     "map.lastUsedExportFilter": "JSON map-файлы (*.tmj *.json)",
+    "map.lastUsedFormat": "tmx",
     "map.tileHeight": 16,
     "map.tileWidth": 16,
     "map.width": 15,
     "openFiles": [
+        "RoguePics/безымянный.tmx"
     ],
     "project": "RogueMap.tiled-project",
     "recentFiles": [
+        "RoguePics/безымянный.tmx",
         "RoguePics/egrwgeWF.tsx"
     ],
     "tileset.lastUsedFormat": "tsx",
