@@ -209,10 +209,10 @@ namespace Netrogue
 
     internal enum MapTile
     {
-        Floor = 0,
-        Wall = 40,
-        Exit = 35,
-        Mob = 111
+        Floor,
+        Wall,
+        Exit,
+        Mob
     }
 
     internal class MapLayer
