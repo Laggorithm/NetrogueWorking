@@ -6,7 +6,6 @@ using static System.Net.Mime.MediaTypeNames;
 
 namespace Netrogue
 {
-     
     internal class Game
     {
         public static readonly int tileSize = 16;
@@ -21,11 +20,11 @@ namespace Netrogue
         int game_height;
         RenderTexture game_screen;
         Texture imageTexture;
+
         private void Init()
         {
-
             Update();
-            
+
             game_width = 16 * 16;
             game_height = 16 * 16;
             const int screen_width = 900;
@@ -35,17 +34,13 @@ namespace Netrogue
             Raylib.SetWindowState(ConfigFlags.FLAG_WINDOW_RESIZABLE);
             game_screen = Raylib.LoadRenderTexture(game_width, game_height);
             Raylib.SetTextureFilter(game_screen.texture, TextureFilter.TEXTURE_FILTER_POINT);
-            
-            
+
             imageTexture = Raylib.LoadTexture("RoguePics/tilemap_packed.png");
             SetImageAndIndex(player, imageTexture, imagesPerRow, index);
-
-
         }
+
         private void DrawGameScaled()
         {
-
-            // Tässä piirretään tekstuuri ruudulle
             Raylib.BeginDrawing();
             Raylib.ClearBackground(Raylib.DARKGRAY);
 
@@ -53,8 +48,6 @@ namespace Netrogue
             int draw_height = Raylib.GetScreenHeight();
             float scale = Math.Min((float)draw_width / game_width, (float)draw_height / game_height);
 
-            // Note: when drawing on texture, the Y-axis is
-            //flipped, need to multiply height by -1
             Rectangle source = new Rectangle(0.0f, 0.0f,
                 game_screen.texture.width,
                 game_screen.texture.height * -1.0f);
@@ -122,7 +115,6 @@ namespace Netrogue
                 MovePlayer();
                 level.MapImage = imageTexture;
 
-                
                 Raylib.BeginTextureMode(game_screen);
                 level.Draw();
 
@@ -130,12 +122,9 @@ namespace Netrogue
                 DrawPlayer();
                 Raylib.EndTextureMode();
                 DrawGameScaled();
-                
-
             }
             Raylib.CloseWindow();
         }
-
 
         void Update()
         {
@@ -240,26 +229,27 @@ namespace Netrogue
             return newPlayer;
         }
 
-            private void DrawPlayer()
-            {
+        private void DrawPlayer()
+        {
+            // Determine the image index based on the player's class
+            int rowIndex = (int)player.ImageIndex;
+
+            int ImageX = rowIndex % imagesPerRow;
+            int ImageY = (int)(rowIndex / imagesPerRow);
+            player.imagePixelX = ImageX * tileSize;
+            player.imagePixelY = ImageY * tileSize;
+            int pixelPositionX = (int)player.position.X * Game.tileSize;
+            int pixelPositionY = (int)player.position.Y * Game.tileSize;
+            Vector2 pixelPosition = new Vector2(pixelPositionX, pixelPositionY);
+            Rectangle imageRect = new Rectangle(player.imagePixelX, player.imagePixelY, Game.tileSize, Game.tileSize);
+            Raylib.DrawTextureRec(player.image, imageRect, pixelPosition, Raylib.WHITE);
             
 
-                // Determine the image index based on the player's class
-                int rowIndex = (int)player.ImageIndex;
-
-                int ImageX = rowIndex % imagesPerRow;
-                int ImageY = (int)(rowIndex / imagesPerRow);
-                player.imagePixelX = ImageX * tileSize;
-                player.imagePixelY = ImageY * tileSize;
-                int pixelPositionX = (int)player.position.X * Game.tileSize;
-                int pixelPositionY = (int)player.position.Y * Game.tileSize;
-                Vector2 pixelPosition = new Vector2(pixelPositionX, pixelPositionY);
-                Rectangle imageRect = new Rectangle(player.imagePixelX, player.imagePixelY, Game.tileSize, Game.tileSize);
-                Raylib.DrawTextureRec(player.image, imageRect, pixelPosition, Raylib.WHITE);
-            }
+        }
 
         private void MovePlayer()
         {
+             
             // Prepare movement variables
             int moveX = 0;
             int moveY = 0;
@@ -268,58 +258,73 @@ namespace Netrogue
             {
                 moveY = -1;
             }
-            if (Raylib.IsKeyDown(KeyboardKey.KEY_DOWN))
+            if (Raylib.IsKeyPressed(KeyboardKey.KEY_DOWN))
             {
                 moveY = 1;
             }
-            if (Raylib.IsKeyDown(KeyboardKey.KEY_LEFT))
+            if (Raylib.IsKeyPressed(KeyboardKey.KEY_LEFT))
             {
                 moveX = -1;
             }
-            if (Raylib.IsKeyDown(KeyboardKey.KEY_RIGHT))
+            if (Raylib.IsKeyPressed(KeyboardKey.KEY_RIGHT))
             {
                 moveX = 1;
             }
 
-            // Move the player
-            player.position.X += moveX;
-            player.position.Y += moveY;
+            // Calculate new position
+            Vector2 newPosition = player.position + new Vector2(moveX, moveY);
+
+            // Get tile ID at the new position
+            int tileIdAtNewPosition = level.GetTileId((int)newPosition.X, (int)newPosition.Y);
+            Console.WriteLine($"Tile ID at new position ({newPosition.X}, {newPosition.Y}): {tileIdAtNewPosition}");
 
             // Check for collision with walls
-            if (level.GetTile((int)player.position.X, (int)player.position.Y) == MapTile.Wall)
+            if (level.WallPositions.Any(pos => pos == newPosition))
             {
-                // If player hits a wall, reset the position
-                player.position.X -= moveX;
-                player.position.Y -= moveY;
-            }
-
-            if (level.GetTile((int)player.position.X, (int)player.position.Y) == MapTile.Mob)
-            {
-                // If player hits a mob, reset the position and increase the timer
-                player.position.X -= moveX;
-                player.position.Y -= moveY;
-                timer += 3;
-            }
-
-            // Check for exit
-            if (level.GetTile((int)player.position.X, (int)player.position.Y) == MapTile.Exit)
-            {
-                // Re-generate the map and reset player position
-                MapLoader loader = new MapLoader();
-               
-                player.position = FindValidPlayerSpawnPosition();
-                // Clear the screen and redraw everything
                 Console.Clear();
-                level.Draw();
-                DrawPlayerInfo();
+                Console.WriteLine("Cannot move through walls!");
+                DisplayWallPositions(); // Display the wall positions
+                return;
             }
+
+            // Check for collision with mobs
+            if (level.MobPositions.Any(pos => pos == newPosition))
+            {
+                Console.WriteLine("Encountered a mob!");
+                // Handle mob encounter
+                timer += 3;
+                return; // Prevent moving onto the mob tile
+            }
+
+            // Check for collision with items
+            if (level.ItemPositions.Any(pos => pos == newPosition))
+            {
+                 
+                Console.WriteLine("Collected an item!");
+                // Handle item collection
+                return; // Prevent moving onto the item tile
+            }
+
+            // Move the player to the new position
+            player.position = newPosition;
 
             // Clear the screen and redraw player
-            Console.Clear();
             level.Draw();
             DrawPlayerInfo();
             DrawPlayer();
         }
+
+        private void DisplayWallPositions()
+        {
+            Console.WriteLine("Wall Positions:");
+            foreach (var pos in level.WallPositions)
+            {
+                
+                Console.WriteLine($"X: {pos.X}, Y: {pos.Y}");
+            }
+        }
+
+
 
         private Vector2 FindValidPlayerSpawnPosition()
         {

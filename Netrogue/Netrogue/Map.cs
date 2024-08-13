@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Numerics;
 using ZeroElectric.Vinculum;
@@ -14,8 +15,16 @@ namespace Netrogue
         public int mapWidth { get; set; }
         public int Height { get; private set; }
         private MapTile[,] tiles;
-        public List<Enemy> enemies { get; set; }
-        public List<Item> items { get; set; }
+        public List<Enemy> enemies { get; private set; } = new List<Enemy>();
+        public List<Item> items { get; private set; } = new List<Item>();
+
+        // Lists to store the positions of items, mobs, and walls
+        public List<Vector2> ItemPositions { get; private set; } = new List<Vector2>();
+        public List<Vector2> MobPositions { get; private set; } = new List<Vector2>();
+        public List<Vector2> WallPositions { get; private set; } = new List<Vector2>();
+
+        private readonly int[] wallTileIds = { 5, 27, 6, 13, 25, 16, 14, 26, 17, 3, 18 };
+
 
         public Map()
         {
@@ -74,6 +83,15 @@ namespace Netrogue
             return tiles[x, y];
         }
 
+        public int GetTileId(int x, int y)
+        {
+            if (x >= 0 && x < mapWidth && y >= 0 && y < Height)
+            {
+                return (int)tiles[x, y];
+            }
+            return -1; // Return an invalid ID if out of bounds
+        }
+
         public MapLayer GetLayer(string layerName)
         {
             foreach (var layer in layers)
@@ -88,46 +106,62 @@ namespace Netrogue
 
         public void LoadEnemiesAndItems()
         {
-            enemies = new List<Enemy>();
-            MapLayer enemyLayer = GetLayer("Monsters");
+            enemies.Clear();
+            ItemPositions.Clear();
+            MobPositions.Clear();
+            WallPositions.Clear();
 
-            int[] enemyTiles = enemyLayer.mapTiles;
-            int mapHeight = enemyTiles.Length / mapWidth;
+            MapLayer enemyLayer = GetLayer("Monsters");
+            MapLayer itemLayer = GetLayer("items");
+            MapLayer groundLayer = GetLayer("Ground");
+
+            // Process enemies
+            ProcessLayer(enemyLayer, (position, tileId) =>
+            {
+                if (tileId == 111)
+                {
+                    var enemy = new Enemy("Mage", 111, position, tileId, this);
+                    enemies.Add(enemy);
+                    MobPositions.Add(position); // Store the position of the spawned mob
+                }
+            });
+
+            // Process items
+            ProcessLayer(itemLayer, (position, tileId) =>
+            {
+                if (tileId == 124)
+                {
+                    var item = new Item("helmet", 124, position, tileId, this);
+                    items.Add(item);
+                    ItemPositions.Add(position); // Store the position of the spawned item
+                }
+            });
+
+            // Process walls
+            ProcessLayer(groundLayer, (position, tileId) =>
+            {
+                if (wallTileIds.Contains(tileId))
+                {
+                    WallPositions.Add(position); // Store the position of the wall
+                }
+            });
+        }
+
+        private void ProcessLayer(MapLayer layer, Action<Vector2, int> processTile)
+        {
+            if (layer == null || layer.mapTiles == null) return;
+
+            int[] tilesArray = layer.mapTiles;
+            int mapHeight = tilesArray.Length / mapWidth;
+
             for (int y = 0; y < mapHeight; y++)
             {
                 for (int x = 0; x < mapWidth; x++)
                 {
                     Vector2 position = new Vector2(x, y);
-
                     int index = x + y * mapWidth;
-                    int tileId = enemyTiles[index];
-                        switch (tileId)
-                        {
-                            case 0: break;
-                            case 111: enemies.Add(new Enemy("Mage", 111, position, tileId, this)); break;
-                            default: enemies.Add(new Enemy("UnknownEnemy", 111, position, tileId, this)); break;
-                        }
-                }
-            }
-
-            items = new List<Item>();
-            MapLayer itemLayer = GetLayer("items");
-
-            int[] itemTiles = itemLayer.mapTiles;
-            int itemMapHeight = itemTiles.Length / mapWidth;
-            for (int y = 0; y < itemMapHeight; y++)
-            {
-                for (int x = 0; x < mapWidth; x++)
-                {
-                    Vector2 position = new Vector2(x, y);
-
-                    int index = x + y * mapWidth;
-                    int tileId = itemTiles[index];
-                    switch (tileId)
-                    {
-                        case 0: break;
-                        case 124: items.Add(new Item("helmet", 124, position, tileId, this)); break;
-                    }
+                    int tileId = tilesArray[index];
+                    processTile(position, tileId);
                 }
             }
         }
