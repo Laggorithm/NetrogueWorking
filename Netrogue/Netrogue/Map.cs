@@ -23,8 +23,8 @@ namespace Netrogue
         public List<Vector2> MobPositions { get; private set; } = new List<Vector2>();
         public List<Vector2> WallPositions { get; private set; } = new List<Vector2>();
 
-        private readonly int[] wallTileIds = { 5, 27, 6, 13, 25, 16, 14, 26, 17, 3, 18 };
-
+        private readonly int[] wallTileIds = {5, 27, 6, 13, 1, 16, 14, 26, 17, 3, 18};
+        
 
         public Map()
         {
@@ -47,6 +47,10 @@ namespace Netrogue
                 {
                     int index = x + y * mapWidth;
                     int tileId = layers[0].mapTiles[index];
+                    if (tileId == 1)
+                    {
+                        Console.WriteLine("1th spawned");
+                    }
                     switch (tileId)
                     {
                         case (int)MapTile.Floor:
@@ -55,11 +59,9 @@ namespace Netrogue
                         case (int)MapTile.Wall:
                             SetTile(x, y, MapTile.Wall);
                             break;
-                        case (int)MapTile.Exit:
-                            SetTile(x, y, MapTile.Exit);
-                            break;
+                   
                         default:
-                            SetTile(x, y, MapTile.Floor);
+                            SetTile(x, y, MapTile.Wall);
                             break;
                     }
                 }
@@ -83,13 +85,13 @@ namespace Netrogue
             return tiles[x, y];
         }
 
-        public int GetTileId(int x, int y)
+        public MapTile GetTileId(int x, int y)
         {
             if (x >= 0 && x < mapWidth && y >= 0 && y < Height)
             {
-                return (int)tiles[x, y];
+                return tiles[x, y];
             }
-            return -1; // Return an invalid ID if out of bounds
+            return MapTile.Wall; // Return an invalid ID if out of bounds
         }
 
         public MapLayer GetLayer(string layerName)
@@ -162,6 +164,7 @@ namespace Netrogue
                     int index = x + y * mapWidth;
                     int tileId = tilesArray[index];
                     processTile(position, tileId);
+
                 }
             }
         }
@@ -209,8 +212,7 @@ namespace Netrogue
                     return '-';
                 case MapTile.Wall:
                     return '#';
-                case MapTile.Exit:
-                    return 'E';
+                 
                 case MapTile.Mob:
                     return 'M';
                 default:
@@ -245,7 +247,6 @@ namespace Netrogue
     {
         Floor,
         Wall,
-        Exit,
         Mob
     }
 

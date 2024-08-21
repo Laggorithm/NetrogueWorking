@@ -275,11 +275,12 @@ namespace Netrogue
             Vector2 newPosition = player.position + new Vector2(moveX, moveY);
 
             // Get tile ID at the new position
-            int tileIdAtNewPosition = level.GetTileId((int)newPosition.X, (int)newPosition.Y);
+            MapTile tileIdAtNewPosition = level.GetTileId((int)newPosition.X, (int)newPosition.Y);
             Console.WriteLine($"Tile ID at new position ({newPosition.X}, {newPosition.Y}): {tileIdAtNewPosition}");
 
             // Check for collision with walls
-            if (level.WallPositions.Any(pos => pos == newPosition))
+            //if (level.WallPositions.Any(pos => pos == newPosition) || tileIdAtNewPosition < 0)
+            if (tileIdAtNewPosition == MapTile.Wall)
             {
                 Console.Clear();
                 Console.WriteLine("Cannot move through walls!");
@@ -312,6 +313,7 @@ namespace Netrogue
             level.Draw();
             DrawPlayerInfo();
             DrawPlayer();
+            Raylib.DrawText(tileIdAtNewPosition.ToString(), 10, 10, 12, Raylib.RED);
         }
 
         private void DisplayWallPositions()
