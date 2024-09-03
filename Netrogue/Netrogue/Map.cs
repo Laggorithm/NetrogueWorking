@@ -117,6 +117,24 @@ namespace Netrogue
             MapLayer itemLayer = GetLayer("items");
             MapLayer groundLayer = GetLayer("Ground");
 
+            ProcessLayer(groundLayer, (position, tileId) =>
+            {
+                if (wallTileIds.Contains(tileId))
+                {
+                    WallPositions.Add(position); // Store the position of the wall
+                }
+            });
+
+            ProcessLayer(itemLayer, (position, tileId) =>
+            {
+                if (tileId == 124)
+                {
+                    var item = new Item("helmet", 124, position, tileId, this);
+                    items.Add(item);
+                    ItemPositions.Add(position); // Store the position of the spawned item
+                }
+            });
+
             // Process enemies
             ProcessLayer(enemyLayer, (position, tileId) =>
             {
@@ -128,25 +146,7 @@ namespace Netrogue
                 }
             });
 
-            // Process items
-            ProcessLayer(itemLayer, (position, tileId) =>
-            {
-                if (tileId == 124)
-                {
-                    var item = new Item("helmet", 124, position, tileId, this);
-                    items.Add(item);
-                    ItemPositions.Add(position); // Store the position of the spawned item
-                }
-            });
-
-            // Process walls
-            ProcessLayer(groundLayer, (position, tileId) =>
-            {
-                if (wallTileIds.Contains(tileId))
-                {
-                    WallPositions.Add(position); // Store the position of the wall
-                }
-            });
+            
         }
 
         private void ProcessLayer(MapLayer layer, Action<Vector2, int> processTile)
