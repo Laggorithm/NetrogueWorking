@@ -18,8 +18,54 @@ namespace Netrogue
         private int timer = 0;
         int game_width;
         int game_height;
+        private bool isMenuActive = true;
         RenderTexture game_screen;
         Texture imageTexture;
+
+        public void DrawMainMenu()
+        {
+            // Clear the screen and begin drawing
+            Raylib.BeginDrawing();
+            Raylib.ClearBackground(Raylib.BLACK);
+
+            // Calculate button dimensions and positions
+            int button_width = 250;
+            int button_height = 40;
+            int button_x = Raylib.GetScreenWidth() / 2 - button_width / 2;
+            int button_y = Raylib.GetScreenHeight() / 2 - button_height / 2;
+
+            // Draw game title
+            RayGui.GuiLabel(new Rectangle(button_x, button_y - button_height * 2, button_width, button_height), "Rogue");
+
+            // Draw instructions
+            RayGui.GuiLabel(new Rectangle(button_x, button_y - button_height, button_width, button_height), "Use Mouse Keys to Navigate");
+
+            // Start Game button
+            if (RayGui.GuiButton(new Rectangle(button_x, button_y, button_width, button_height), "Start Game") == 1)
+            {
+                isMenuActive = false; // Exit the menu
+            }
+
+            // Move to next button position
+            button_y += button_height * 2;
+
+            // Options button
+            if (RayGui.GuiButton(new Rectangle(button_x, button_y, button_width, button_height), "Options") == 1)
+            {
+                // Go to options (implementation needed)
+            }
+
+            // Move to next button position
+            button_y += button_height * 2;
+
+            // Quit button
+            if (RayGui.GuiButton(new Rectangle(button_x, button_y, button_width, button_height), "Quit") == 1)
+            {
+                Raylib.CloseWindow();
+            }
+
+            Raylib.EndDrawing();
+        }
 
         private void Init()
         {
@@ -48,22 +94,20 @@ namespace Netrogue
             int draw_height = Raylib.GetScreenHeight();
             float scale = Math.Min((float)draw_width / game_width, (float)draw_height / game_height);
 
-            Rectangle source = new Rectangle(0.0f, 0.0f,
-                game_screen.texture.width,
-                game_screen.texture.height * -1.0f);
+            Rectangle source = new Rectangle(0.0f, 0.0f, game_screen.texture.width, game_screen.texture.height * -1.0f);
 
             Rectangle destination = new Rectangle(
                 (draw_width - (float)game_width * scale) * 0.5f,
                 (draw_height - (float)game_height * scale) * 0.5f,
                 game_width * scale,
-                game_height * scale);
+                game_height * scale
+            );
 
-            Raylib.DrawTexturePro(game_screen.texture,
-                source, destination,
-                new Vector2(0, 0), 0.0f, Raylib.WHITE);
+            Raylib.DrawTexturePro(game_screen.texture, source, destination, new Vector2(0, 0), 0.0f, Raylib.WHITE);
 
             Raylib.EndDrawing();
         }
+
 
         void SetImageAndIndex(PlayerCharacter player, Texture PlayerTexture, int imagesPerRow, int index)
         {
@@ -86,7 +130,7 @@ namespace Netrogue
             level = loader.ReadMapFromFile("RogueMap.tmj");
             level.InitMap();
             Init();
-            level.MapImage = (imageTexture);
+            level.MapImage = imageTexture;
             mapWidth = level.mapWidth;
             mapHeight = level.Height;
 
@@ -112,19 +156,27 @@ namespace Netrogue
             // Start the game loop
             while (!Raylib.WindowShouldClose())
             {
-                MovePlayer();
-                level.MapImage = imageTexture;
+                if (isMenuActive)
+                {
+                    DrawMainMenu(); // Draw the main menu
+                }
+                else
+                {
+                    MovePlayer();
+                    level.MapImage = imageTexture;
 
-                Raylib.BeginTextureMode(game_screen);
-                level.Draw();
+                    Raylib.BeginTextureMode(game_screen);
+                    level.Draw();
 
-                DrawPlayerInfo();
-                DrawPlayer();
-                Raylib.EndTextureMode();
-                DrawGameScaled();
+                    DrawPlayerInfo();
+                    DrawPlayer();
+                    Raylib.EndTextureMode();
+                    DrawGameScaled();
+                }
             }
             Raylib.CloseWindow();
         }
+
 
         void Update()
         {
@@ -243,13 +295,13 @@ namespace Netrogue
             Vector2 pixelPosition = new Vector2(pixelPositionX, pixelPositionY);
             Rectangle imageRect = new Rectangle(player.imagePixelX, player.imagePixelY, Game.tileSize, Game.tileSize);
             Raylib.DrawTextureRec(player.image, imageRect, pixelPosition, Raylib.WHITE);
-            
+
 
         }
 
         private void MovePlayer()
         {
-             
+
             // Prepare movement variables
             int moveX = 0;
             int moveY = 0;
@@ -300,7 +352,7 @@ namespace Netrogue
             // Check for collision with items
             if (level.ItemPositions.Any(pos => pos == newPosition))
             {
-                 
+
                 Console.WriteLine("Collected an item!");
                 // Handle item collection
                 return; // Prevent moving onto the item tile
@@ -321,7 +373,7 @@ namespace Netrogue
             Console.WriteLine("Wall Positions:");
             foreach (var pos in level.WallPositions)
             {
-                
+
                 Console.WriteLine($"X: {pos.X}, Y: {pos.Y}");
             }
         }
