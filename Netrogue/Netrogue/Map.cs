@@ -23,8 +23,7 @@ namespace Netrogue
         public List<Vector2> MobPositions { get; private set; } = new List<Vector2>();
         public List<Vector2> WallPositions { get; private set; } = new List<Vector2>();
 
-        private readonly int[] wallTileIds = {5, 27, 6, 13, 1, 16, 14, 26, 17, 3, 18};
-        
+        private readonly int[] wallTileIds = { 5, 27, 6, 13, 1, 16, 14, 26, 17, 3, 18 };
 
         public Map()
         {
@@ -59,7 +58,7 @@ namespace Netrogue
                         case (int)MapTile.Wall:
                             SetTile(x, y, MapTile.Wall);
                             break;
-                   
+
                         default:
                             SetTile(x, y, MapTile.Wall);
                             break;
@@ -140,13 +139,11 @@ namespace Netrogue
             {
                 if (tileId == 111)
                 {
-                    var enemy = new Enemy("Mage", 111, position, tileId, this);
+                    var enemy = new Enemy("Mage", 111, new Position(position.X, position.Y), tileId, 1, 12, this);
                     enemies.Add(enemy);
                     MobPositions.Add(position); // Store the position of the spawned mob
                 }
             });
-
-            
         }
 
         private void ProcessLayer(MapLayer layer, Action<Vector2, int> processTile)
@@ -164,7 +161,6 @@ namespace Netrogue
                     int index = x + y * mapWidth;
                     int tileId = tilesArray[index];
                     processTile(position, tileId);
-
                 }
             }
         }
@@ -212,7 +208,7 @@ namespace Netrogue
                     return '-';
                 case MapTile.Wall:
                     return '#';
-                 
+
                 case MapTile.Mob:
                     return 'M';
                 default:

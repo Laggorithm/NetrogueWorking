@@ -19,7 +19,7 @@ namespace Netrogue_working_
     {
         Mage, Warrior, Rogue
     }
-
+    
     internal class PlayerCharacter
     {
         public Texture image;

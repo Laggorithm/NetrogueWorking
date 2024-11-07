@@ -2,7 +2,6 @@
 using System;
 using System.Numerics;
 using ZeroElectric.Vinculum;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace Netrogue
 {
@@ -16,11 +15,14 @@ namespace Netrogue
         public static int imagesPerRow = 12;
         private int index;
         private int timer = 0;
-        int game_width;
-        int game_height;
+        private int game_width;
+        private int game_height;
         private bool isMenuActive = true;
+        private bool isClassSelectionActive = false;
+        private bool isSettingsActive = false;// Track if class selection is active
         RenderTexture game_screen;
         Texture imageTexture;
+        Music backgroundMusic;
 
         public void DrawMainMenu()
         {
@@ -38,21 +40,13 @@ namespace Netrogue
             RayGui.GuiLabel(new Rectangle(button_x, button_y - button_height * 2, button_width, button_height), "Rogue");
 
             // Draw instructions
-            RayGui.GuiLabel(new Rectangle(button_x, button_y - button_height, button_width, button_height), "Use Mouse Keys to Navigate");
+            RayGui.GuiLabel(new Rectangle(button_x, button_y - button_height, button_width, button_height), "Use Mouse to Navigate");
 
             // Start Game button
             if (RayGui.GuiButton(new Rectangle(button_x, button_y, button_width, button_height), "Start Game") == 1)
             {
                 isMenuActive = false; // Exit the menu
-            }
-
-            // Move to next button position
-            button_y += button_height * 2;
-
-            // Options button
-            if (RayGui.GuiButton(new Rectangle(button_x, button_y, button_width, button_height), "Options") == 1)
-            {
-                // Go to options (implementation needed)
+                isClassSelectionActive = true; // Activate class selection
             }
 
             // Move to next button position
@@ -64,7 +58,136 @@ namespace Netrogue
                 Raylib.CloseWindow();
             }
 
+            button_y += button_height * 2;
+
+            if (RayGui.GuiButton(new Rectangle(button_x, button_y, button_width, button_height), "Settings") == 1)
+            {
+                isMenuActive = false;
+                isSettingsActive = true;
+            }
+
             Raylib.EndDrawing();
+        }
+
+        private void DrawClassSelection()
+        {
+            // Clear the screen and begin drawing
+            Raylib.BeginDrawing();
+            Raylib.ClearBackground(Raylib.DARKGRAY);
+
+            // Calculate button dimensions and positions
+            int button_width = 250;
+            int button_height = 40;
+            int button_x = Raylib.GetScreenWidth() / 2 - button_width / 2;
+            int button_y = Raylib.GetScreenHeight() / 2 - button_height * 2;
+
+            // Draw class selection title
+            RayGui.GuiLabel(new Rectangle(button_x, button_y - button_height * 2, button_width, button_height), "Select Your Class");
+
+            // Mage button
+            if (RayGui.GuiButton(new Rectangle(button_x, button_y, button_width, button_height), "Mage") == 1)
+            {
+                AssignPlayerClass(Role.Mage);
+            }
+
+            // Warrior button
+            button_y += button_height + 10; // Add space between buttons
+            if (RayGui.GuiButton(new Rectangle(button_x, button_y, button_width, button_height), "Warrior") == 1)
+            {
+                AssignPlayerClass(Role.Warrior);
+            }
+
+            // Rogue button
+            button_y += button_height + 10; // Add space between buttons
+            if (RayGui.GuiButton(new Rectangle(button_x, button_y, button_width, button_height), "Rogue") == 1)
+            {
+                AssignPlayerClass(Role.Rogue);
+            }
+
+            Raylib.EndDrawing();
+        }
+
+        private void DrawPause()
+        {
+            // Clear the screen and begin drawing
+            Raylib.BeginDrawing();
+            Raylib.ClearBackground(Raylib.DARKGRAY);
+
+            // Calculate button dimensions and positions
+            int button_width = 250;
+            int button_height = 40;
+            int button_x = Raylib.GetScreenWidth() / 2 - button_width / 2;
+            int button_y = Raylib.GetScreenHeight() / 2 - button_height * 2;
+
+            // Draw class selection title
+            RayGui.GuiLabel(new Rectangle(button_x, button_y - button_height * 2, button_width, button_height), "Select Your Class");
+
+            // Mage button
+            if (RayGui.GuiButton(new Rectangle(button_x, button_y, button_width, button_height), "LOUDEEEER!!!") == 1)
+            {
+                
+            }
+
+            // Warrior button
+            button_y += button_height + 10; // Add space between buttons
+            if (RayGui.GuiButton(new Rectangle(button_x, button_y, button_width, button_height), "Silence!") == 1)
+            {
+                 
+            }
+
+            // Rogue button
+            button_y += button_height + 10; // Add space between buttons
+            if (RayGui.GuiButton(new Rectangle(button_x, button_y, button_width, button_height), "Back to Main Menu") == 1)
+            {
+                isSettingsActive = false;
+                isMenuActive = true;
+            }
+
+            button_y += button_height + 10; // Add space between buttons
+            if (RayGui.GuiButton(new Rectangle(button_x, button_y, button_width, button_height), "Back to Action!") == 1)
+            {
+                bool IsPlayerClassNull()
+                {
+                    return player == null || player.role == default(Role);
+                }
+
+                if (IsPlayerClassNull())
+                {
+                    isMenuActive = true;
+                    isSettingsActive = false;
+                    Console.WriteLine("Player class is not set.");
+                }
+                else
+                {
+                    isMenuActive =false;
+                    isSettingsActive = false;
+                }
+
+            }
+
+            Raylib.EndDrawing();
+        }
+ 
+        private void AssignPlayerClass(Role selectedRole)
+        {
+            player.role = selectedRole;
+
+            // Assign ImageIndex based on selected role
+            switch (selectedRole)
+            {
+                case Role.Mage:
+                    player.ImageIndex = 85; // Set the image index for Mage
+                    break;
+                case Role.Warrior:
+                    player.ImageIndex = 86; // Set the image index for Warrior
+                    break;
+                case Role.Rogue:
+                    player.ImageIndex = 87; // Set the image index for Rogue
+                    break;
+            }
+
+            Console.WriteLine($"You have chosen {player.role} as your role.");
+            isClassSelectionActive = false; // Exit class selection
         }
 
         private void Init()
@@ -76,13 +199,19 @@ namespace Netrogue
             const int screen_width = 900;
             const int screen_height = 460;
             Raylib.InitWindow(screen_width, screen_height, "Rogue");
+            Raylib.InitAudioDevice(); // Initialize audio device
+
             Raylib.SetWindowMinSize(game_width, game_height);
             Raylib.SetWindowState(ConfigFlags.FLAG_WINDOW_RESIZABLE);
             game_screen = Raylib.LoadRenderTexture(game_width, game_height);
             Raylib.SetTextureFilter(game_screen.texture, TextureFilter.TEXTURE_FILTER_POINT);
 
             imageTexture = Raylib.LoadTexture("RoguePics/tilemap_packed.png");
+            backgroundMusic = Raylib.LoadMusicStream("LevelMusic/BeatTrack45.mp3");  
+
             SetImageAndIndex(player, imageTexture, imagesPerRow, index);
+            
+
         }
 
         private void DrawGameScaled()
@@ -108,7 +237,6 @@ namespace Netrogue
             Raylib.EndDrawing();
         }
 
-
         void SetImageAndIndex(PlayerCharacter player, Texture PlayerTexture, int imagesPerRow, int index)
         {
             player.image = PlayerTexture;
@@ -118,6 +246,8 @@ namespace Netrogue
 
         public void Run()
         {
+           
+            Raylib.PlayMusicStream(backgroundMusic);
             Raylib.UnloadRenderTexture(game_screen);
             Console.WriteLine("Welcome to Netrogue!");
             Console.WriteLine("Press Enter to start the game...");
@@ -154,14 +284,31 @@ namespace Netrogue
             level.LoadEnemiesAndItems();
 
             // Start the game loop
+            Raylib.PlayMusicStream(backgroundMusic); // Start playing the music
+
             while (!Raylib.WindowShouldClose())
             {
+                Raylib.UpdateMusicStream(backgroundMusic); // Update the music stream
+
                 if (isMenuActive)
                 {
                     DrawMainMenu(); // Draw the main menu
                 }
+                else if (isClassSelectionActive)
+                {
+                    DrawClassSelection(); // Draw the class selection menu
+                }
+                else if (isSettingsActive)
+                {
+                    DrawPause();
+                }
                 else
                 {
+                    if (Raylib.IsKeyPressed(KeyboardKey.KEY_P))
+                    {
+                        isSettingsActive = true; // Activate pause menu
+                    }
+
                     MovePlayer();
                     level.MapImage = imageTexture;
 
@@ -172,14 +319,29 @@ namespace Netrogue
                     DrawPlayer();
                     Raylib.EndTextureMode();
                     DrawGameScaled();
+
+                     
                 }
             }
             Raylib.CloseWindow();
+
+        }
+
+         
+
+        private void ResetGameState()
+        {
+            // Reset any game-specific state here if necessary
+            player = null;
+            level = null;
+            Init(); // Reinitialize game or load the main menu
         }
 
 
         void Update()
         {
+             
+
             while (timer > 0)
             {
                 Raylib.DrawText("You hit a Mob!", Raylib.GetScreenWidth() - 16 * 11, Raylib.GetScreenHeight() - 16, 16, Raylib.WHITE);
@@ -200,83 +362,12 @@ namespace Netrogue
                 {
                     Console.WriteLine("Name cannot be empty. Please enter a valid name.");
                 }
-                else if (ContainsDigits(newPlayer.name))
+                else if (newPlayer.name.Length > 20)
                 {
-                    Console.WriteLine("Invalid name. Please enter a name without digits.");
+                    Console.WriteLine("Name cannot exceed 20 characters. Please enter a valid name.");
+                    newPlayer.name = string.Empty; // Reset to allow for re-entry
                 }
-                else
-                {
-                    Console.WriteLine($"Hello, {newPlayer.name}!");
-                }
-            } while (string.IsNullOrWhiteSpace(newPlayer.name) || ContainsDigits(newPlayer.name));
-
-            // Selecting player race
-            bool validRace = false;
-            do
-            {
-                Console.WriteLine("Pick race: Elf- 1, Orc- 2, Dwarf- 3");
-                string raceNumber = Console.ReadLine();
-
-                switch (raceNumber)
-                {
-                    case "1":
-                        newPlayer.race = Race.Elf;
-                        Console.WriteLine($"You have chosen {newPlayer.race} as your race.");
-                        validRace = true;
-                        break;
-                    case "2":
-                        newPlayer.race = Race.Orc;
-                        Console.WriteLine($"You have chosen {newPlayer.race} as your race.");
-                        validRace = true;
-                        break;
-                    case "3":
-                        newPlayer.race = Race.Dwarf;
-                        Console.WriteLine($"You have chosen {newPlayer.race} as your race.");
-                        validRace = true;
-                        break;
-                    default:
-                        Console.WriteLine("Invalid input. Please choose a valid race.");
-                        break;
-                }
-            } while (!validRace); // Keep looping until a valid race is chosen
-
-            // Selecting player role
-            bool validRole = false;
-            do
-            {
-                Console.WriteLine("Pick role: Mage- 1, Warrior- 2, Rogue- 3");
-                string roleNumber = Console.ReadLine();
-
-                switch (roleNumber)
-                {
-                    case "1":
-                        newPlayer.role = Role.Mage;
-                        Console.WriteLine($"You have chosen {newPlayer.role} as your role.");
-                        newPlayer.ImageIndex = 85; // Set the image index for Mage
-                        validRole = true;
-                        break;
-                    case "2":
-                        newPlayer.role = Role.Warrior;
-                        Console.WriteLine($"You have chosen {newPlayer.role} as your role.");
-                        newPlayer.ImageIndex = 86; // Set the image index for Warrior
-                        validRole = true;
-                        break;
-                    case "3":
-                        newPlayer.role = Role.Rogue;
-                        Console.WriteLine($"You have chosen {newPlayer.role} as your role.");
-                        newPlayer.ImageIndex = 87; // Set the image index for Rogue
-                        validRole = true;
-                        break;
-                    default:
-                        Console.WriteLine("Invalid input. Please choose a valid role.");
-                        break;
-                }
-            } while (!validRole); // Keep looping until a valid role is chosen
-
-            Console.WriteLine("Press Enter to start your adventure...");
-            while (Console.ReadKey().Key != ConsoleKey.Enter) { }
-
-            Console.Clear();
+            } while (string.IsNullOrWhiteSpace(newPlayer.name) || newPlayer.name.Length > 20);
 
             return newPlayer;
         }
@@ -412,4 +503,6 @@ namespace Netrogue
             return false;
         }
     }
+
+
 }
