@@ -2,7 +2,7 @@
 
 
 
-internal class Program
+public class Program
 
 {
 

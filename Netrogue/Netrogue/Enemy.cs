@@ -1,61 +1,58 @@
 ﻿using System.Numerics;
-using System.Text.Json.Serialization;
 using ZeroElectric.Vinculum;
 
 namespace Netrogue
 {
     public class Enemy
     {
-        private Map level;
+        private Map level; // Map reference for rendering
 
-        public int MobLvl { get; private set; }
+        public int MobLvl { get; set; }
         public string MobName { get; set; }
-        public int ID { get; private set; }
-        public Position Position { get; set; }  // Change this to Position
+        public int ID { get; set; }
+        public Position Position { get; set; }
         public int SpriteIndex { get; set; }
-        public int HitPoints { get; set; }
-        public string Element { get; set; }
+        
+         
 
-        [JsonConstructor]
-        public Enemy(string mobName, int id, Position position, int spriteIndex, int moblvl, int hitPoints, Map map) // Update to Position
+        // Constructor for deserialization
+        public Enemy(string mobName, int id, Position position, int spriteIndex, Map level)
         {
             MobName = mobName;
             ID = id;
             Position = position;
             SpriteIndex = spriteIndex;
-            MobLvl = moblvl;
-            HitPoints = hitPoints;
-            level = map; // Assign the map instance
+            this.level = level;
+            
+             
         }
 
-        public Enemy(string mobName, int spriteIndex, int hitPoints, string element)
+        // Default constructor for editing in Enemy Editor
+        public Enemy()
         {
-            MobName = mobName;
-            SpriteIndex = spriteIndex;
-            HitPoints = hitPoints;
-            Element = element;
-            Position = new Position(0, 0); // Default position
+            MobName = "New Mob";
+            ID = 0;
+            Position = new Position(0, 0);
+            SpriteIndex = 0;
+            
         }
 
+        // Assign the map for rendering
+        public void SetMap(Map map)
+        {
+            level = map;
+        }
+
+        // Render the enemy in-game
         public void Draw()
         {
+            if (level == null) return;
+
             int tileX = (SpriteIndex % Game.imagesPerRow) * Game.tileSize;
             int tileY = (SpriteIndex / Game.imagesPerRow) * Game.tileSize;
-            Texture mapImage = level.MapImage; // Use the assigned map
-            Rectangle source = new Rectangle(tileX, tileY, Game.tileSize, Game.tileSize);
-            Vector2 position = new Vector2(Position.X * Game.tileSize, Position.Y * Game.tileSize);
-            Raylib.DrawTextureRec(mapImage, source, position, Raylib.WHITE);
-        }
+            Raylib.DrawTextureRec(level.MapImage, new Rectangle(tileX, tileY, Game.tileSize, Game.tileSize), new Vector2(Position.X * Game.tileSize, Position.Y * Game.tileSize), Raylib.WHITE);
 
-        public Enemy() // Parameterless constructor
-        {
-            MobName = "New Mob"; // Default name
-            ID = 0; // Default ID
-            Position = new Position(0, 0); // Default position
-            SpriteIndex = 0; // Default sprite index
-            HitPoints = 100; // Default hit points
-            Element = "Neutral"; // Default element, if applicable
+            
         }
-
     }
 }

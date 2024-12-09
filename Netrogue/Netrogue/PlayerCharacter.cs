@@ -10,17 +10,17 @@ namespace Netrogue_working_
 {
     
 
-    enum Race
+    public enum Race
     {
         Elf, Orc, Dwarf
     }
 
-    enum Role
+    public enum Role
     {
         Mage, Warrior, Rogue
     }
     
-    internal class PlayerCharacter
+    public class PlayerCharacter
     {
         public Texture image;
         public int imagePixelX;

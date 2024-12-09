@@ -3,7 +3,7 @@ using ZeroElectric.Vinculum;
 
 namespace Netrogue
 {
-    internal class Item
+    public class Item
     {
         private Map level;
         public int ID { get; private set; }

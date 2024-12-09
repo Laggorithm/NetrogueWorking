@@ -3,19 +3,20 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Numerics;
+using System.Text.Json;
 using ZeroElectric.Vinculum;
 using TurboMapReader;
 
 namespace Netrogue
 {
-    internal class Map
+    public class Map
     {
         public Texture MapImage { get; set; }
         public MapLayer[] layers { get; set; }
         public int mapWidth { get; set; }
         public int Height { get; private set; }
         private MapTile[,] tiles;
-        public List<Enemy> enemies { get; private set; } = new List<Enemy>();
+        public static List<Enemy> enemies { get; private set; } = new List<Enemy>();
         public List<Item> items { get; private set; } = new List<Item>();
 
         // Lists to store the positions of items, mobs, and walls
@@ -139,7 +140,7 @@ namespace Netrogue
             {
                 if (tileId == 111)
                 {
-                    var enemy = new Enemy("Mage", 111, new Position(position.X, position.Y), tileId, 1, 12, this);
+                    var enemy = new Enemy("Mage", 111, new Position(position.X, position.Y), tileId, this);
                     enemies.Add(enemy);
                     MobPositions.Add(position); // Store the position of the spawned mob
                 }
@@ -236,19 +237,77 @@ namespace Netrogue
 
             InitMap();
             LoadEnemiesAndItems();
+            LoadEnemiesFromJson("C:\\asgdga\\WPF\\EnemyEditor\\bin\\Debug\\net7.0-windows7.0\\enemies.json");
+        }
+
+        
+        public void LoadEnemiesFromJson(string filePath)
+        {
+            if (!File.Exists(filePath))
+            {
+                throw new FileNotFoundException($"File not found: {filePath}");
+            }
+
+            try
+            {
+                // Read the JSON file contents
+                string jsonContent = File.ReadAllText(filePath);
+
+                // Deserialize the JSON into a list of Enemy objects
+                var loadedEnemies = JsonSerializer.Deserialize<List<Enemy>>(jsonContent);
+
+                if (loadedEnemies == null || loadedEnemies.Count == 0)
+                {
+                    Console.WriteLine("No enemies found in the JSON file.");
+                    return;
+                }
+
+                // Add enemies to the map
+                foreach (var enemy in loadedEnemies)
+                {
+                    // Use SpriteIndex as tileId
+                    int tileId = enemy.SpriteIndex;
+
+                    // Ensure the enemy knows the map
+                    enemy.SetMap(this);
+
+                    // Spawn the enemy at the specified position
+                    Vector2 position = new Vector2(enemy.Position.X, enemy.Position.Y);
+                    var spawnedEnemy = new Enemy(enemy.MobName, enemy.ID, new Position(position.X, position.Y), tileId, this);
+
+                    // Add to the list of enemies and store position
+                    enemies.Add(spawnedEnemy);
+                    MobPositions.Add(position);
+
+                    Console.WriteLine($"Loaded enemy {enemy.MobName} with SpriteIndex {tileId} at position {position}.");
+                }
+
+                Console.WriteLine($"Loaded {loadedEnemies.Count} enemies from JSON.");
+            }
+            catch (JsonException ex)
+            {
+                Console.WriteLine($"Error deserializing JSON: {ex.Message}");
+                throw;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Unexpected error loading enemies: {ex.Message}");
+                throw;
+            }
         }
     }
 
-    internal enum MapTile
-    {
-        Floor,
-        Wall,
-        Mob
-    }
 
-    internal class MapLayer
-    {
-        public string name;
-        public int[] mapTiles;
-    }
+        public enum MapTile
+        {
+            Floor,
+            Wall,
+            Mob
+        }
+
+        public class MapLayer
+        {
+            public string name;
+            public int[] mapTiles;
+        }
 }

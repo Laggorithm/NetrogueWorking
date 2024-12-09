@@ -5,7 +5,7 @@ using ZeroElectric.Vinculum;
 
 namespace Netrogue
 {
-    internal class Game
+    public class Game
     {
         public static readonly int tileSize = 16;
         private PlayerCharacter player;
