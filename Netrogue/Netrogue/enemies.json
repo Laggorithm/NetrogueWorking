@@ -1,0 +1,38 @@
+[
+  {
+    "MobLvl": 0,
+    "MobName": "asasda",
+    "ID": 112,
+    "Position": {
+      "X": 211,
+      "Y": 121
+    },
+    "SpriteIndex": 12,
+    "HitPoints": 100,
+    "Element": "Neutral"
+  },
+  {
+    "MobLvl": 0,
+    "MobName": "PiDoor",
+    "ID": 113,
+    "Position": {
+      "X": 12,
+      "Y": 2
+    },
+    "SpriteIndex": 12,
+    "HitPoints": 189,
+    "Element": "Neutral"
+  },
+  {
+    "MobLvl": 0,
+    "MobName": "Aboben",
+    "ID": 122,
+    "Position": {
+      "X": 10,
+      "Y": 7
+    },
+    "SpriteIndex": 12,
+    "HitPoints": 100,
+    "Element": "Neutral"
+  }
+]

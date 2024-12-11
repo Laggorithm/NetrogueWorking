@@ -148,7 +148,7 @@ namespace Netrogue
             {
                 bool IsPlayerClassNull()
                 {
-                    return player == null || player.role == default(Role);
+                    return player == null || player.role == null;
                 }
 
                 if (IsPlayerClassNull())

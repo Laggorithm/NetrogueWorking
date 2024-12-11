@@ -27,8 +27,8 @@ namespace Netrogue_working_
         public int imagePixelY;
 
         public string name;
-        public Race race;
-        public Role role;
+        public Race? race;
+        public Role? role;
         public Vector2 position;
         public int ImageIndex; // Added ImageIndex property
 

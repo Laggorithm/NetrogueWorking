@@ -24,7 +24,9 @@ namespace Netrogue
         public List<Vector2> MobPositions { get; private set; } = new List<Vector2>();
         public List<Vector2> WallPositions { get; private set; } = new List<Vector2>();
 
-        private readonly int[] wallTileIds = { 5, 27, 6, 13, 1, 16, 14, 26, 17, 3, 18 };
+        private readonly int[] wallTileIds = { 5, 27, 6, 13, 2, 16, 14, 26, 17, 3, 18 };
+        private Dictionary<int, List<Enemy>> enemyLookup = new Dictionary<int, List<Enemy>>();
+
 
         public Map()
         {
@@ -46,27 +48,21 @@ namespace Netrogue
                 for (int y = 0; y < Height; y++)
                 {
                     int index = x + y * mapWidth;
-                    int tileId = layers[0].mapTiles[index];
-                    if (tileId == 1)
-                    {
-                        Console.WriteLine("1th spawned");
-                    }
-                    switch (tileId)
-                    {
-                        case (int)MapTile.Floor:
-                            SetTile(x, y, MapTile.Floor);
-                            break;
-                        case (int)MapTile.Wall:
-                            SetTile(x, y, MapTile.Wall);
-                            break;
+                    int tileId = layers[0].mapTiles[index]; // Adjusted to match the original offset
 
-                        default:
-                            SetTile(x, y, MapTile.Wall);
-                            break;
+                    // Check if the tileId exists in the wallTileIds list
+                    if (Array.Exists(wallTileIds, id => id == tileId))
+                    {
+                        SetTile(x, y, MapTile.Wall); // Mark as Wall if tileId matches
+                    }
+                    else
+                    {
+                        SetTile(x, y, MapTile.Floor); // Otherwise, mark as Floor
                     }
                 }
             }
         }
+
 
         public void InitEmptyMap(int width, int height)
         {
@@ -127,9 +123,10 @@ namespace Netrogue
 
             ProcessLayer(itemLayer, (position, tileId) =>
             {
-                if (tileId == 124)
+                if (tileId == 125)
                 {
-                    var item = new Item("helmet", 124, position, tileId, this);
+                    int tileIDToFind = tileId;
+                    var item = new Item("helmet", tileId, position, tileId-1, this);
                     items.Add(item);
                     ItemPositions.Add(position); // Store the position of the spawned item
                 }
@@ -138,13 +135,51 @@ namespace Netrogue
             // Process enemies
             ProcessLayer(enemyLayer, (position, tileId) =>
             {
-                if (tileId == 111)
+                if (tileId != 0)
                 {
-                    var enemy = new Enemy("Mage", 111, new Position(position.X, position.Y), tileId, this);
-                    enemies.Add(enemy);
-                    MobPositions.Add(position); // Store the position of the spawned mob
+                    // Check if the tileId exists in the loaded enemies
+                    if (enemyLookup.ContainsKey(tileId))
+                    {
+
+                        
+                        foreach (var enemyData in enemyLookup[tileId])
+                        {
+                            foreach (var key in enemyLookup.Keys)
+                            {
+                                if (key == tileId)
+                                {
+                                    Console.WriteLine($"Loaded enemy ID in lookup: {key}");
+
+                                    // Create the enemy based on the data found in the JSON
+                                    var enemy = new Enemy(
+                                        enemyData.MobName, // Use name from JSON data
+                                        enemyData.ID,      // Use ID from JSON data
+                                        new Position(position.X, position.Y), // Use the position on the map
+                                        tileId,            // Use the tileId as the sprite index
+                                        this
+
+
+                                    );
+
+                                    // Add the enemy to the list and store its position
+                                    enemies.Add(enemy);
+                                    MobPositions.Add(position);
+
+                                    Console.WriteLine($"Spawned enemy {enemy.MobName} at position {position}");
+                                }
+                                
+                            }
+
+                        }
+                    }
+                    else
+                    {
+                        Console.WriteLine($"No enemy found in JSON for tileId {tileId}");
+                    }
                 }
             });
+
+
         }
 
         private void ProcessLayer(MapLayer layer, Action<Vector2, int> processTile)
@@ -180,7 +215,7 @@ namespace Netrogue
                     for (int x = 0; x < mapWidth; x++)
                     {
                         int tileIndex = x + y * mapWidth;
-                        int tileId = mapTiles[tileIndex];
+                        int tileId = mapTiles[tileIndex] -1;
 
                         int TileX = (tileId % Game.imagesPerRow) * Game.tileSize;
                         int TileY = (tileId / Game.imagesPerRow) * Game.tileSize;
@@ -230,17 +265,18 @@ namespace Netrogue
                 MapLayer mapLayer = new MapLayer
                 {
                     name = layer.name,
-                    mapTiles = layer.data.Select(t => t - 1).ToArray() // Adjust tile indices
+                    mapTiles = layer.data.Select(t => t).ToArray() // Adjust tile indices
                 };
                 layers[i] = mapLayer;
             }
 
             InitMap();
+            LoadEnemiesFromJson("enemies.json");
             LoadEnemiesAndItems();
-            LoadEnemiesFromJson("C:\\asgdga\\WPF\\EnemyEditor\\bin\\Debug\\net7.0-windows7.0\\enemies.json");
+            
         }
 
-        
+
         public void LoadEnemiesFromJson(string filePath)
         {
             if (!File.Exists(filePath))
@@ -262,24 +298,15 @@ namespace Netrogue
                     return;
                 }
 
-                // Add enemies to the map
+                // Populate the class-level enemyLookup dictionary
                 foreach (var enemy in loadedEnemies)
                 {
-                    // Use SpriteIndex as tileId
-                    int tileId = enemy.SpriteIndex;
+                    if (!enemyLookup.ContainsKey(enemy.ID))
+                    {
+                        enemyLookup[enemy.ID] = new List<Enemy>();
+                    }
 
-                    // Ensure the enemy knows the map
-                    enemy.SetMap(this);
-
-                    // Spawn the enemy at the specified position
-                    Vector2 position = new Vector2(enemy.Position.X, enemy.Position.Y);
-                    var spawnedEnemy = new Enemy(enemy.MobName, enemy.ID, new Position(position.X, position.Y), tileId, this);
-
-                    // Add to the list of enemies and store position
-                    enemies.Add(spawnedEnemy);
-                    MobPositions.Add(position);
-
-                    Console.WriteLine($"Loaded enemy {enemy.MobName} with SpriteIndex {tileId} at position {position}.");
+                    enemyLookup[enemy.ID].Add(enemy);
                 }
 
                 Console.WriteLine($"Loaded {loadedEnemies.Count} enemies from JSON.");
